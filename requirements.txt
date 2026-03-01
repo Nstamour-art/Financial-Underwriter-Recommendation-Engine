@@ -1,0 +1,9 @@
+plaid-python
+anthropic
+openai
+python-dotenv
+spacy
+llama-cpp-python
+pandas
+numpy
+streamlit

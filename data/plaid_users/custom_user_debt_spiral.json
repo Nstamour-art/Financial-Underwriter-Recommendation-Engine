@@ -1,0 +1,958 @@
+{
+  "seed": "user-debt-spiral-detailed-history",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": -612.4,
+      "force_available_balance": -612.4,
+      "meta": {
+        "name": "Plaid High-Risk Checking"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-03-01",
+          "date_posted": "2026-03-01",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS RENT PORTAL"
+        },
+        {
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-02-28",
+          "amount": 5.0,
+          "description": "INT CHG: OVERDRAFT BALANCE"
+        },
+        {
+          "date_transacted": "2026-02-26",
+          "date_posted": "2026-02-26",
+          "amount": 14.2,
+          "description": "POS DEB 2311 02/26/26 14:23 MCDONALDS #345 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-24",
+          "date_posted": "2026-02-24",
+          "amount": -115.0,
+          "description": "ACH DEPOSIT UBER TECHNOLOGIES PPD ID: 8829103"
+        },
+        {
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-20",
+          "amount": 5.0,
+          "description": "INT CHG: OVERDRAFT BALANCE"
+        },
+        {
+          "date_transacted": "2026-02-18",
+          "date_posted": "2026-02-18",
+          "amount": 9.5,
+          "description": "POS PUR 1832 02/18/26 09:12 STARBUCKS STORE #0983 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2026-02-14",
+          "date_posted": "2026-02-14",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM PAID FEE 992019"
+        },
+        {
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-10",
+          "amount": 22.4,
+          "description": "POS DEB 1928 02/10/26 18:45 BURGER KING #443 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-05",
+          "amount": 5.0,
+          "description": "INT CHG: OVERDRAFT BALANCE"
+        },
+        {
+          "date_transacted": "2026-02-02",
+          "date_posted": "2026-02-02",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS GEICO DIR DEBIT"
+        },
+        {
+          "date_transacted": "2026-02-01",
+          "date_posted": "2026-02-01",
+          "amount": -85.5,
+          "description": "ACH DEPOSIT UBER TECHNOLOGIES PPD ID: 8829103"
+        },
+        {
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-28",
+          "amount": -320.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-25",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM PAID FEE 992019"
+        },
+        {
+          "date_transacted": "2026-01-22",
+          "date_posted": "2026-01-22",
+          "amount": 18.5,
+          "description": "POS DEB 3928 01/22/26 13:02 TACO BELL #8472 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-01-18",
+          "date_posted": "2026-01-18",
+          "amount": 42.0,
+          "description": "POS PUR 1029 01/18/26 08:33 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CITY UTILITY"
+        },
+        {
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-10",
+          "amount": 12.99,
+          "description": "RECURRING DEBIT NETFLIX.COM LOS GATOS CA"
+        },
+        {
+          "date_transacted": "2026-01-05",
+          "date_posted": "2026-01-05",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS RENT PORTAL"
+        },
+        {
+          "date_transacted": "2026-01-02",
+          "date_posted": "2026-01-02",
+          "amount": 1200.0,
+          "description": "RTN ACH RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-12-24",
+          "date_posted": "2025-12-24",
+          "amount": 110.0,
+          "description": "POS DEBIT AMZN MKTPLACE PMTS AMZN.COM/BILL WA"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM PAID FEE 992019"
+        },
+        {
+          "date_transacted": "2025-12-18",
+          "date_posted": "2025-12-18",
+          "amount": 55.0,
+          "description": "POS DEB 3912 12/18/25 15:44 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-12-12",
+          "date_posted": "2025-12-12",
+          "amount": 42.15,
+          "description": "UBER EATS PENDING SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-12-08",
+          "date_posted": "2025-12-08",
+          "amount": 95.0,
+          "description": "ACH DEBIT VERIZON WIRELESS PMT ID: 839283"
+        },
+        {
+          "date_transacted": "2025-12-05",
+          "date_posted": "2025-12-05",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2025-12-01",
+          "date_posted": "2025-12-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-11-25",
+          "date_posted": "2025-11-25",
+          "amount": 65.0,
+          "description": "ACH DEBIT GEICO PREMIUM PMT"
+        },
+        {
+          "date_transacted": "2025-11-20",
+          "date_posted": "2025-11-20",
+          "amount": 14.5,
+          "description": "POS DEB 8472 11/20/25 12:30 CHICK-FIL-A #3842 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-11-14",
+          "date_posted": "2025-11-14",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2025-11-10",
+          "date_posted": "2025-11-10",
+          "amount": 45.0,
+          "description": "POS PUR 1029 11/10/25 08:15 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-11-05",
+          "date_posted": "2025-11-05",
+          "amount": 15.6,
+          "description": "POS DEB 1923 11/05/25 23:10 7-ELEVEN STORE #39920 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-11-01",
+          "date_posted": "2025-11-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-10-28",
+          "date_posted": "2025-10-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-10-25",
+          "date_posted": "2025-10-25",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM PAID FEE 992019"
+        },
+        {
+          "date_transacted": "2025-10-22",
+          "date_posted": "2025-10-22",
+          "amount": 75.0,
+          "description": "POS DEB 3912 10/22/25 17:33 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-10-20",
+          "date_posted": "2025-10-20",
+          "amount": 65.0,
+          "description": "LEGAL ORDER WITHHOLDING HOLD TX: 9382093"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-10-12",
+          "date_posted": "2025-10-12",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2025-10-08",
+          "date_posted": "2025-10-08",
+          "amount": 95.0,
+          "description": "ACH DEBIT VERIZON WIRELESS PMT ID: 839283"
+        },
+        {
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-05",
+          "amount": 22.1,
+          "description": "POS DEB 9382 10/05/25 13:45 WENDYS #3982 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-10-01",
+          "date_posted": "2025-10-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-09-28",
+          "date_posted": "2025-09-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-09-24",
+          "date_posted": "2025-09-24",
+          "amount": 42.0,
+          "description": "POS PUR 1029 09/24/25 07:50 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-09-20",
+          "date_posted": "2025-09-20",
+          "amount": 18.5,
+          "description": "POS DEB 2311 09/20/25 12:15 MCDONALDS #345 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-09-12",
+          "date_posted": "2025-09-12",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2025-09-08",
+          "date_posted": "2025-09-08",
+          "amount": 85.0,
+          "description": "POS DEB 8372 09/08/25 14:20 WALMART SUPERCENTER #3928 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-05",
+          "amount": 65.0,
+          "description": "ACH DEBIT GEICO PREMIUM PMT"
+        },
+        {
+          "date_transacted": "2025-09-01",
+          "date_posted": "2025-09-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-25",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM PAID FEE 992019"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-20",
+          "amount": 55.0,
+          "description": "POS DEB 3912 08/20/25 18:10 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-08-12",
+          "date_posted": "2025-08-12",
+          "amount": 35.0,
+          "description": "RET ITEM CHARGE - INSUFF FUNDS CHASE CC"
+        },
+        {
+          "date_transacted": "2025-08-08",
+          "date_posted": "2025-08-08",
+          "amount": 95.0,
+          "description": "ACH DEBIT VERIZON WIRELESS PMT ID: 839283"
+        },
+        {
+          "date_transacted": "2025-08-05",
+          "date_posted": "2025-08-05",
+          "amount": 14.5,
+          "description": "POS PUR 1832 08/05/25 09:05 STARBUCKS STORE #0983 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-08-01",
+          "date_posted": "2025-08-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-25",
+          "amount": 42.0,
+          "description": "POS PUR 1029 07/25/25 16:30 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 110.0,
+          "description": "ACH DEBIT CITY UTILITY PMT"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-07-12",
+          "date_posted": "2025-07-12",
+          "amount": 150.0,
+          "description": "ACH DEBIT CHASE CC PMT"
+        },
+        {
+          "date_transacted": "2025-07-08",
+          "date_posted": "2025-07-08",
+          "amount": 85.0,
+          "description": "POS DEB 8372 07/08/25 11:45 WALMART SUPERCENTER #3928 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-07-05",
+          "date_posted": "2025-07-05",
+          "amount": 65.0,
+          "description": "ACH DEBIT GEICO PREMIUM PMT"
+        },
+        {
+          "date_transacted": "2025-07-01",
+          "date_posted": "2025-07-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-06-28",
+          "date_posted": "2025-06-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": 14.2,
+          "description": "POS DEB 2311 06/25/25 13:10 MCDONALDS #345 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-20",
+          "amount": 65.0,
+          "description": "POS DEB 3912 06/20/25 19:22 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-06-12",
+          "date_posted": "2025-06-12",
+          "amount": 150.0,
+          "description": "ACH DEBIT CHASE CC PMT"
+        },
+        {
+          "date_transacted": "2025-06-08",
+          "date_posted": "2025-06-08",
+          "amount": 95.0,
+          "description": "ACH DEBIT VERIZON WIRELESS PMT ID: 839283"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-05",
+          "amount": 42.0,
+          "description": "POS PUR 1029 06/05/25 08:20 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-06-01",
+          "date_posted": "2025-06-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-05-25",
+          "date_posted": "2025-05-25",
+          "amount": 18.5,
+          "description": "POS DEB 1928 05/25/25 12:55 BURGER KING #443 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-20",
+          "amount": 110.0,
+          "description": "ACH DEBIT CITY UTILITY PMT"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-05-12",
+          "date_posted": "2025-05-12",
+          "amount": 150.0,
+          "description": "ACH DEBIT CHASE CC PMT"
+        },
+        {
+          "date_transacted": "2025-05-08",
+          "date_posted": "2025-05-08",
+          "amount": 125.0,
+          "description": "POS DEB 8372 05/08/25 15:30 WALMART SUPERCENTER #3928 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-05-05",
+          "date_posted": "2025-05-05",
+          "amount": 65.0,
+          "description": "ACH DEBIT GEICO PREMIUM PMT"
+        },
+        {
+          "date_transacted": "2025-05-01",
+          "date_posted": "2025-05-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-04-24",
+          "date_posted": "2025-04-24",
+          "amount": 45.0,
+          "description": "POS PUR 1029 04/24/25 17:15 SHELL SERVICE STATION MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-20",
+          "amount": 85.0,
+          "description": "POS DEB 3912 04/20/25 10:45 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-04-12",
+          "date_posted": "2025-04-12",
+          "amount": 150.0,
+          "description": "ACH DEBIT CHASE CC PMT"
+        },
+        {
+          "date_transacted": "2025-04-08",
+          "date_posted": "2025-04-08",
+          "amount": 95.0,
+          "description": "ACH DEBIT VERIZON WIRELESS PMT ID: 839283"
+        },
+        {
+          "date_transacted": "2025-04-05",
+          "date_posted": "2025-04-05",
+          "amount": 14.5,
+          "description": "POS DEB 8472 04/05/25 12:40 CHICK-FIL-A #3842 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-04-01",
+          "date_posted": "2025-04-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-03-25",
+          "date_posted": "2025-03-25",
+          "amount": 115.0,
+          "description": "ACH DEBIT CITY UTILITY PMT"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-20",
+          "amount": 18.5,
+          "description": "POS DEB 3928 03/20/25 21:10 TACO BELL #8472 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-15",
+          "amount": -800.0,
+          "description": "DIR DEP SHIFT-PRO STAFFING ACH 198273"
+        },
+        {
+          "date_transacted": "2025-03-12",
+          "date_posted": "2025-03-12",
+          "amount": 150.0,
+          "description": "ACH DEBIT CHASE CC PMT"
+        },
+        {
+          "date_transacted": "2025-03-08",
+          "date_posted": "2025-03-08",
+          "amount": 65.0,
+          "description": "ACH DEBIT GEICO PREMIUM PMT"
+        },
+        {
+          "date_transacted": "2025-03-05",
+          "date_posted": "2025-03-05",
+          "amount": 145.0,
+          "description": "POS DEB 3912 03/05/25 16:20 KROGER STORE #394"
+        },
+        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-01",
+          "amount": 1200.0,
+          "description": "ACH DEBIT RENT PORTAL WEB ID: 398203"
+        }
+      ]
+    },
+    {
+      "type": "credit",
+      "subtype": "credit card",
+      "starting_balance": 8245,
+      "meta": {
+        "name": "Plaid Overlimit Card",
+        "limit": 5000
+      },
+      "liability": {
+        "type": "credit",
+        "purchase_apr": 29.99,
+        "last_payment_amount": 0,
+        "minimum_payment_amount": 850,
+        "is_overdue": true
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-20",
+          "amount": 215.1,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2026-02-14",
+          "date_posted": "2026-02-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2026-01-20",
+          "date_posted": "2026-01-20",
+          "amount": 208.4,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 201.2,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2025-12-14",
+          "date_posted": "2025-12-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-11-20",
+          "date_posted": "2025-11-20",
+          "amount": 194.5,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2025-11-14",
+          "date_posted": "2025-11-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-10-20",
+          "date_posted": "2025-10-20",
+          "amount": 188.1,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2025-10-14",
+          "date_posted": "2025-10-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-09-20",
+          "date_posted": "2025-09-20",
+          "amount": 182.4,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2025-09-14",
+          "date_posted": "2025-09-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-20",
+          "amount": 176.2,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": 45.0,
+          "description": "LATE PAYMENT FEE"
+        },
+        {
+          "date_transacted": "2025-08-14",
+          "date_posted": "2025-08-14",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": 35.0,
+          "description": "OVERLIMIT FEE"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-25",
+          "amount": 85.0,
+          "description": "BEST BUY #0938 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 170.5,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": 110.0,
+          "description": "AMZN MKTP US*8A3892 AMZN.COM/BILL WA"
+        },
+        {
+          "date_transacted": "2025-07-12",
+          "date_posted": "2025-07-12",
+          "amount": -150.0,
+          "description": "PAYMENT - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-07-08",
+          "date_posted": "2025-07-08",
+          "amount": 65.0,
+          "description": "TEXAS ROADHOUSE #3892 MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-07-02",
+          "date_posted": "2025-07-02",
+          "amount": 45.0,
+          "description": "UBER *TRIP SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": 210.0,
+          "description": "TARGET #0392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-20",
+          "amount": 165.1,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-06-18",
+          "date_posted": "2025-06-18",
+          "amount": 85.0,
+          "description": "AMZN MKTP US*B83292 AMZN.COM/BILL WA"
+        },
+        {
+          "date_transacted": "2025-06-12",
+          "date_posted": "2025-06-12",
+          "amount": -150.0,
+          "description": "PAYMENT - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-06-08",
+          "date_posted": "2025-06-08",
+          "amount": 140.0,
+          "description": "WAL-MART #3829 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-05",
+          "amount": 55.0,
+          "description": "UBER *EATS SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": 320.0,
+          "description": "DISCOUNT TIRE #3892 BRAMPTON ON"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-20",
+          "amount": 159.8,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-05-18",
+          "date_posted": "2025-05-18",
+          "amount": 65.0,
+          "description": "DOORDASH *DASHMART SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-05-12",
+          "date_posted": "2025-05-12",
+          "amount": -150.0,
+          "description": "PAYMENT - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-05-08",
+          "date_posted": "2025-05-08",
+          "amount": 110.0,
+          "description": "KROGER STORE #0382 ATLANTA GA"
+        },
+        {
+          "date_transacted": "2025-05-03",
+          "date_posted": "2025-05-03",
+          "amount": 85.0,
+          "description": "AMZN MKTP US*X81829 AMZN.COM/BILL WA"
+        },
+        {
+          "date_transacted": "2025-04-26",
+          "date_posted": "2025-04-26",
+          "amount": 185.0,
+          "description": "TARGET #0392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-20",
+          "amount": 154.6,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-04-18",
+          "date_posted": "2025-04-18",
+          "amount": 95.0,
+          "description": "THE HOME DEPOT #3829 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-04-12",
+          "date_posted": "2025-04-12",
+          "amount": -150.0,
+          "description": "PAYMENT - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-04-08",
+          "date_posted": "2025-04-08",
+          "amount": 55.0,
+          "description": "CHILIS GRILL & BAR #0382 MISSISSAUGA ON"
+        },
+        {
+          "date_transacted": "2025-04-02",
+          "date_posted": "2025-04-02",
+          "amount": 110.0,
+          "description": "AMZN MKTP US*M93021 AMZN.COM/BILL WA"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": 240.0,
+          "description": "BEST BUY #0938 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-20",
+          "amount": 149.2,
+          "description": "PURCHASE FINANCE CHARGE"
+        },
+        {
+          "date_transacted": "2025-03-18",
+          "date_posted": "2025-03-18",
+          "amount": 65.0,
+          "description": "DOORDASH *DASHMART SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-03-12",
+          "date_posted": "2025-03-12",
+          "amount": -150.0,
+          "description": "PAYMENT - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-03-08",
+          "date_posted": "2025-03-08",
+          "amount": 130.0,
+          "description": "WAL-MART #3829 SCARBOROUGH ON"
+        },
+        {
+          "date_transacted": "2025-03-04",
+          "date_posted": "2025-03-04",
+          "amount": 85.0,
+          "description": "AMZN MKTP US*L39201 AMZN.COM/BILL WA"
+        }
+      ]
+    }
+  ]
+}

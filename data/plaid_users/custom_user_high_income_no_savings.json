@@ -1,0 +1,1178 @@
+{
+  "seed": "user-high-income-varied-spending",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 62500.00,
+      "force_available_balance": 62500.00,
+      "meta": {
+        "name": "Premium Tier Checking"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-02-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-25",
+          "date_posted": "2026-02-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2026-02-16",
+          "date_posted": "2026-02-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": 1200.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2026-02-14",
+          "date_posted": "2026-02-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2026-02-02",
+          "date_posted": "2026-02-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2026-02-01",
+          "date_posted": "2026-02-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2026-01-20",
+          "date_posted": "2026-01-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2026-01-16",
+          "date_posted": "2026-01-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": 800.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2026-01-05",
+          "date_posted": "2026-01-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2026-01-02",
+          "date_posted": "2026-01-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2026-01-01",
+          "date_posted": "2026-01-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-12-25",
+          "date_posted": "2025-12-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-12-16",
+          "date_posted": "2025-12-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": 1400.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-12-14",
+          "date_posted": "2025-12-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-12-10",
+          "date_posted": "2025-12-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-12-05",
+          "date_posted": "2025-12-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-12-02",
+          "date_posted": "2025-12-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-12-01",
+          "date_posted": "2025-12-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-11-25",
+          "date_posted": "2025-11-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-11-20",
+          "date_posted": "2025-11-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-11-16",
+          "date_posted": "2025-11-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": 750.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-11-14",
+          "date_posted": "2025-11-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-11-10",
+          "date_posted": "2025-11-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-11-05",
+          "date_posted": "2025-11-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-11-02",
+          "date_posted": "2025-11-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-11-01",
+          "date_posted": "2025-11-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-10-28",
+          "date_posted": "2025-10-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-10-25",
+          "date_posted": "2025-10-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-10-20",
+          "date_posted": "2025-10-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-10-16",
+          "date_posted": "2025-10-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": 1100.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-10-14",
+          "date_posted": "2025-10-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-10-10",
+          "date_posted": "2025-10-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-10-02",
+          "date_posted": "2025-10-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-10-01",
+          "date_posted": "2025-10-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-09-28",
+          "date_posted": "2025-09-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-09-25",
+          "date_posted": "2025-09-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-09-20",
+          "date_posted": "2025-09-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-09-16",
+          "date_posted": "2025-09-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": 850.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-09-14",
+          "date_posted": "2025-09-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-09-10",
+          "date_posted": "2025-09-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-09-02",
+          "date_posted": "2025-09-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-09-01",
+          "date_posted": "2025-09-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-08-16",
+          "date_posted": "2025-08-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": 600.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-08-14",
+          "date_posted": "2025-08-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-08-10",
+          "date_posted": "2025-08-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-08-05",
+          "date_posted": "2025-08-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-08-02",
+          "date_posted": "2025-08-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-08-01",
+          "date_posted": "2025-08-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-07-16",
+          "date_posted": "2025-07-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": 950.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-07-14",
+          "date_posted": "2025-07-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-07-10",
+          "date_posted": "2025-07-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-07-05",
+          "date_posted": "2025-07-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-07-02",
+          "date_posted": "2025-07-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-07-01",
+          "date_posted": "2025-07-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-06-28",
+          "date_posted": "2025-06-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-06-16",
+          "date_posted": "2025-06-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-15",
+          "amount": 1050.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-06-14",
+          "date_posted": "2025-06-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-06-10",
+          "date_posted": "2025-06-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-06-02",
+          "date_posted": "2025-06-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-06-01",
+          "date_posted": "2025-06-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-05-25",
+          "date_posted": "2025-05-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-05-16",
+          "date_posted": "2025-05-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-15",
+          "amount": 800.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-05-14",
+          "date_posted": "2025-05-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-05-10",
+          "date_posted": "2025-05-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-05-05",
+          "date_posted": "2025-05-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-05-02",
+          "date_posted": "2025-05-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-05-01",
+          "date_posted": "2025-05-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-04-25",
+          "date_posted": "2025-04-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-04-16",
+          "date_posted": "2025-04-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-15",
+          "amount": 1300.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-04-14",
+          "date_posted": "2025-04-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-04-10",
+          "date_posted": "2025-04-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-04-05",
+          "date_posted": "2025-04-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-04-02",
+          "date_posted": "2025-04-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-04-01",
+          "date_posted": "2025-04-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": 300.00,
+          "description": "POS DEB 4829 MERRY MAIDS #3928 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-03-25",
+          "date_posted": "2025-03-25",
+          "amount": 250.00,
+          "description": "ACH DEBIT EQUINOX YORKVILLE ID: 399102"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-20",
+          "amount": 180.00,
+          "description": "AUTO-PMT STATE FARM INS POLICY 993-291"
+        },
+        {
+          "date_transacted": "2025-03-16",
+          "date_posted": "2025-03-16",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-15",
+          "amount": 900.00,
+          "description": "ACH DEBIT PLATINUM CARD PMT WEB ID: 338192"
+        },
+        {
+          "date_transacted": "2025-03-14",
+          "date_posted": "2025-03-14",
+          "amount": 1500.00,
+          "description": "TFR TO WEALTH MGMT RRSP ACCT XXXXX9211"
+        },
+        {
+          "date_transacted": "2025-03-10",
+          "date_posted": "2025-03-10",
+          "amount": 120.00,
+          "description": "RECURRING DEBIT BELL CANADA PMT ID: 99120"
+        },
+        {
+          "date_transacted": "2025-03-05",
+          "date_posted": "2025-03-05",
+          "amount": 140.00,
+          "description": "ACH DEBIT TORONTO HYDRO WATER PMT"
+        },
+        {
+          "date_transacted": "2025-03-02",
+          "date_posted": "2025-03-02",
+          "amount": -6500.00,
+          "description": "DIR DEP ENTERPRISE TECH ACH 938100"
+        },
+        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-01",
+          "amount": 4200.00,
+          "description": "ACH DEBIT SCOTIABANK MTG LOAN 0039281"
+        }
+      ]
+    },
+    {
+      "type": "credit",
+      "subtype": "credit card",
+      "starting_balance": 0.0,
+      "meta": {
+        "name": "Platinum Rewards Card",
+        "limit": 30000.0
+      },
+      "liability": {
+        "type": "credit",
+        "purchase_apr": 18.99,
+        "last_payment_amount": 1200.0,
+        "minimum_payment_amount": 10.0,
+        "is_overdue": false
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-02-24",
+          "date_posted": "2026-02-24",
+          "amount": 450.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-18",
+          "date_posted": "2026-02-18",
+          "amount": 150.0,
+          "description": "POS DEB 1922 THE CAPITAL GRILLE TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": -1200.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2026-02-12",
+          "date_posted": "2026-02-12",
+          "amount": 50.0,
+          "description": "UBER *TRIP SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2026-01-26",
+          "date_posted": "2026-01-26",
+          "amount": 150.0,
+          "description": "POS PUR 9928 LOBLAWS STORE #392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2026-01-22",
+          "date_posted": "2026-01-22",
+          "amount": 600.0,
+          "description": "NOBU TORONTO DINING RSTRNT"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": -800.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-10",
+          "amount": 300.0,
+          "description": "APPLE STORE #R392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": 850.0,
+          "description": "AIR CANADA 01402938192 YYZ TO LHR"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 300.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": -1400.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-12-05",
+          "date_posted": "2025-12-05",
+          "amount": 200.0,
+          "description": "POS DEB 1922 THE CAPITAL GRILLE TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-11-25",
+          "date_posted": "2025-11-25",
+          "amount": 500.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": -750.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-11-10",
+          "date_posted": "2025-11-10",
+          "amount": 100.0,
+          "description": "UBER *EATS SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-10-22",
+          "date_posted": "2025-10-22",
+          "amount": 200.0,
+          "description": "POS PUR 9928 LOBLAWS STORE #392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-10-18",
+          "date_posted": "2025-10-18",
+          "amount": 450.0,
+          "description": "POS DEB 1922 THE CAPITAL GRILLE TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": -1100.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-05",
+          "amount": 250.0,
+          "description": "TICKETMASTER *EVENT 800-653-8000 CA"
+        },
+        {
+          "date_transacted": "2025-09-24",
+          "date_posted": "2025-09-24",
+          "amount": 350.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-09-18",
+          "date_posted": "2025-09-18",
+          "amount": 250.0,
+          "description": "NOBU TORONTO DINING RSTRNT"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": -850.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-25",
+          "amount": 1200.0,
+          "description": "FAIRMONT ROYAL YORK TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": -600.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-08-10",
+          "date_posted": "2025-08-10",
+          "amount": 300.0,
+          "description": "POS DEB 1922 THE CAPITAL GRILLE TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": 400.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 200.0,
+          "description": "NOBU TORONTO DINING RSTRNT"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": -950.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-07-05",
+          "date_posted": "2025-07-05",
+          "amount": 100.0,
+          "description": "UBER *TRIP SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": 150.0,
+          "description": "POS PUR 9928 LOBLAWS STORE #392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-06-18",
+          "date_posted": "2025-06-18",
+          "amount": 550.0,
+          "description": "POS DEB 1922 THE CAPITAL GRILLE TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-15",
+          "amount": -1050.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-05-22",
+          "date_posted": "2025-05-22",
+          "amount": 600.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-15",
+          "amount": -800.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-05-08",
+          "date_posted": "2025-05-08",
+          "amount": 50.0,
+          "description": "UBER *EATS SAN FRANCISCO CA"
+        },
+        {
+          "date_transacted": "2025-04-26",
+          "date_posted": "2025-04-26",
+          "amount": 300.0,
+          "description": "POS PUR 9928 LOBLAWS STORE #392 TORONTO ON"
+        },
+        {
+          "date_transacted": "2025-04-18",
+          "date_posted": "2025-04-18",
+          "amount": 400.0,
+          "description": "NOBU TORONTO DINING RSTRNT"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-15",
+          "amount": -1300.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-03-24",
+          "date_posted": "2025-03-24",
+          "amount": 900.0,
+          "description": "AIR CANADA 01402938192 YYZ TO LHR"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-15",
+          "amount": -900.0,
+          "description": "PAYMENT RECEIVED - THANK YOU MOBILE APP"
+        },
+        {
+          "date_transacted": "2025-03-10",
+          "date_posted": "2025-03-10",
+          "amount": 200.0,
+          "description": "POS PUR 3829 WHOLEFDS MRKT #110 TORONTO ON"
+        }
+      ]
+    },
+    {
+      "type": "investment",
+      "subtype": "rrsp",
+      "starting_balance": 185000.0,
+      "meta": {
+        "name": "Wealth Management RRSP"
+      },
+      "investment_transactions": [
+        {
+          "date": "2026-02-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2026-01-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-12-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-11-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-10-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-09-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-08-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-07-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-06-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-05-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-04-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        },
+        {
+          "date": "2025-03-14",
+          "name": "WEALTH MGMT AUTO-INVEST VGRO",
+          "quantity": 30,
+          "price": 50.0,
+          "fees": 0,
+          "type": "buy",
+          "currency": "USD",
+          "security": {
+            "ticker_symbol": "VGRO",
+            "name": "Vanguard Growth ETF Portfolio",
+            "currency": "USD"
+          }
+        }
+      ]
+    }
+  ]
+}

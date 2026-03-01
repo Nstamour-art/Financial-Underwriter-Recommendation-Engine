@@ -1,0 +1,1270 @@
+{
+  "seed": "user-middle-income-score-60-full",
+  "override_accounts": [
+    {
+      "type": "depository",
+      "subtype": "checking",
+      "starting_balance": 850.25,
+      "force_available_balance": 850.25,
+      "meta": {
+        "name": "Everyday Checking"
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-02-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-02-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2026-02-25",
+          "date_posted": "2026-02-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2026-02-14",
+          "date_posted": "2026-02-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2026-02-02",
+          "date_posted": "2026-02-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2026-02-01",
+          "date_posted": "2026-02-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2026-01-20",
+          "date_posted": "2026-01-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2026-01-14",
+          "date_posted": "2026-01-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2026-01-05",
+          "date_posted": "2026-01-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2026-01-02",
+          "date_posted": "2026-01-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2026-01-01",
+          "date_posted": "2026-01-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-12-25",
+          "date_posted": "2025-12-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-12-14",
+          "date_posted": "2025-12-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-12-10",
+          "date_posted": "2025-12-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-12-05",
+          "date_posted": "2025-12-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-12-02",
+          "date_posted": "2025-12-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-12-01",
+          "date_posted": "2025-12-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-11-25",
+          "date_posted": "2025-11-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-11-20",
+          "date_posted": "2025-11-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-11-14",
+          "date_posted": "2025-11-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-11-10",
+          "date_posted": "2025-11-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-11-05",
+          "date_posted": "2025-11-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-11-02",
+          "date_posted": "2025-11-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-11-01",
+          "date_posted": "2025-11-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-10-28",
+          "date_posted": "2025-10-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-10-28",
+          "date_posted": "2025-10-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-10-25",
+          "date_posted": "2025-10-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-10-24",
+          "date_posted": "2025-10-24",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM FEE"
+        },
+        {
+          "date_transacted": "2025-10-20",
+          "date_posted": "2025-10-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-10-14",
+          "date_posted": "2025-10-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-10-10",
+          "date_posted": "2025-10-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-10-02",
+          "date_posted": "2025-10-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-10-01",
+          "date_posted": "2025-10-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-09-28",
+          "date_posted": "2025-09-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-09-28",
+          "date_posted": "2025-09-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-09-25",
+          "date_posted": "2025-09-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-09-20",
+          "date_posted": "2025-09-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-09-14",
+          "date_posted": "2025-09-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-09-10",
+          "date_posted": "2025-09-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-09-02",
+          "date_posted": "2025-09-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-09-01",
+          "date_posted": "2025-09-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-08-14",
+          "date_posted": "2025-08-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-08-10",
+          "date_posted": "2025-08-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-08-05",
+          "date_posted": "2025-08-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-08-02",
+          "date_posted": "2025-08-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-08-01",
+          "date_posted": "2025-08-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-07-14",
+          "date_posted": "2025-07-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-07-10",
+          "date_posted": "2025-07-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-07-05",
+          "date_posted": "2025-07-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-07-02",
+          "date_posted": "2025-07-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-07-01",
+          "date_posted": "2025-07-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-06-28",
+          "date_posted": "2025-06-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-06-28",
+          "date_posted": "2025-06-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-06-16",
+          "date_posted": "2025-06-16",
+          "amount": 35.0,
+          "description": "OVERDRAFT ITEM FEE"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-06-14",
+          "date_posted": "2025-06-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-06-10",
+          "date_posted": "2025-06-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-06-02",
+          "date_posted": "2025-06-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-06-01",
+          "date_posted": "2025-06-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-05-25",
+          "date_posted": "2025-05-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-05-14",
+          "date_posted": "2025-05-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-05-10",
+          "date_posted": "2025-05-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-05-05",
+          "date_posted": "2025-05-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-05-02",
+          "date_posted": "2025-05-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-05-01",
+          "date_posted": "2025-05-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-04-25",
+          "date_posted": "2025-04-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-04-14",
+          "date_posted": "2025-04-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-04-10",
+          "date_posted": "2025-04-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-04-05",
+          "date_posted": "2025-04-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-04-02",
+          "date_posted": "2025-04-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-04-01",
+          "date_posted": "2025-04-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": 185.0,
+          "description": "TARGET - SUPERSTORE"
+        },
+        {
+          "date_transacted": "2025-03-25",
+          "date_posted": "2025-03-25",
+          "amount": 200.0,
+          "description": "CREDIT CARD AUTOPAY"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-20",
+          "amount": 40.0,
+          "description": "SHELL OIL"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-15",
+          "amount": 350.0,
+          "description": "TOYOTA FINANCIAL - AUTO LOAN"
+        },
+        {
+          "date_transacted": "2025-03-14",
+          "date_posted": "2025-03-14",
+          "amount": -1850.0,
+          "description": "PAYROLL: REGIONAL MEDICAL CTR"
+        },
+        {
+          "date_transacted": "2025-03-10",
+          "date_posted": "2025-03-10",
+          "amount": 45.0,
+          "description": "UBER EATS"
+        },
+        {
+          "date_transacted": "2025-03-05",
+          "date_posted": "2025-03-05",
+          "amount": 110.0,
+          "description": "CITY WATER & ELECTRIC"
+        },
+        {
+          "date_transacted": "2025-03-02",
+          "date_posted": "2025-03-02",
+          "amount": 120.0,
+          "description": "KROGER - GROCERIES"
+        },
+        {
+          "date_transacted": "2025-03-01",
+          "date_posted": "2025-03-01",
+          "amount": 1500.0,
+          "description": "RENT PAYMENT - OAKWOOD APTS"
+        }
+      ]
+    },
+    {
+      "type": "credit",
+      "subtype": "credit card",
+      "starting_balance": 2450.0,
+      "meta": {
+        "limit": 4000.0,
+        "name": "Standard Rewards Card"
+      },
+      "liability": {
+        "type": "credit",
+        "is_overdue": false,
+        "purchase_apr": 19.99,
+        "last_payment_amount": 200.0,
+        "minimum_payment_amount": 75.0
+      },
+      "transactions": [
+        {
+          "date_transacted": "2026-02-28",
+          "date_posted": "2026-02-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2026-02-25",
+          "date_posted": "2026-02-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2026-02-22",
+          "date_posted": "2026-02-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2026-02-20",
+          "date_posted": "2026-02-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2026-02-15",
+          "date_posted": "2026-02-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2026-02-10",
+          "date_posted": "2026-02-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2026-02-05",
+          "date_posted": "2026-02-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2026-01-28",
+          "date_posted": "2026-01-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2026-01-25",
+          "date_posted": "2026-01-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2026-01-22",
+          "date_posted": "2026-01-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2026-01-20",
+          "date_posted": "2026-01-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2026-01-15",
+          "date_posted": "2026-01-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2026-01-10",
+          "date_posted": "2026-01-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2026-01-05",
+          "date_posted": "2026-01-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-12-28",
+          "date_posted": "2025-12-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-12-25",
+          "date_posted": "2025-12-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-12-22",
+          "date_posted": "2025-12-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-12-20",
+          "date_posted": "2025-12-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-12-15",
+          "date_posted": "2025-12-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-12-10",
+          "date_posted": "2025-12-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-12-05",
+          "date_posted": "2025-12-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-11-28",
+          "date_posted": "2025-11-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-11-25",
+          "date_posted": "2025-11-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-11-22",
+          "date_posted": "2025-11-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-11-20",
+          "date_posted": "2025-11-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-11-15",
+          "date_posted": "2025-11-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-11-10",
+          "date_posted": "2025-11-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-11-05",
+          "date_posted": "2025-11-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-10-28",
+          "date_posted": "2025-10-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-10-25",
+          "date_posted": "2025-10-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-10-22",
+          "date_posted": "2025-10-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-10-20",
+          "date_posted": "2025-10-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-10-15",
+          "date_posted": "2025-10-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-10-10",
+          "date_posted": "2025-10-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-10-05",
+          "date_posted": "2025-10-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-09-28",
+          "date_posted": "2025-09-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-09-25",
+          "date_posted": "2025-09-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-09-22",
+          "date_posted": "2025-09-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-09-20",
+          "date_posted": "2025-09-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-09-15",
+          "date_posted": "2025-09-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-09-10",
+          "date_posted": "2025-09-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-09-05",
+          "date_posted": "2025-09-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-08-28",
+          "date_posted": "2025-08-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-08-25",
+          "date_posted": "2025-08-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-08-22",
+          "date_posted": "2025-08-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-08-20",
+          "date_posted": "2025-08-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-08-15",
+          "date_posted": "2025-08-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-08-10",
+          "date_posted": "2025-08-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-08-05",
+          "date_posted": "2025-08-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-07-28",
+          "date_posted": "2025-07-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-07-25",
+          "date_posted": "2025-07-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-07-22",
+          "date_posted": "2025-07-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-07-20",
+          "date_posted": "2025-07-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-07-15",
+          "date_posted": "2025-07-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-07-10",
+          "date_posted": "2025-07-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-07-05",
+          "date_posted": "2025-07-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-06-28",
+          "date_posted": "2025-06-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-06-25",
+          "date_posted": "2025-06-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-06-22",
+          "date_posted": "2025-06-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-06-20",
+          "date_posted": "2025-06-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-06-15",
+          "date_posted": "2025-06-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-06-10",
+          "date_posted": "2025-06-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-06-05",
+          "date_posted": "2025-06-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-05-28",
+          "date_posted": "2025-05-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-05-25",
+          "date_posted": "2025-05-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-05-22",
+          "date_posted": "2025-05-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-05-20",
+          "date_posted": "2025-05-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-05-15",
+          "date_posted": "2025-05-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-05-10",
+          "date_posted": "2025-05-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-05-05",
+          "date_posted": "2025-05-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-04-28",
+          "date_posted": "2025-04-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-04-25",
+          "date_posted": "2025-04-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-04-22",
+          "date_posted": "2025-04-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-04-20",
+          "date_posted": "2025-04-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-04-15",
+          "date_posted": "2025-04-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-04-10",
+          "date_posted": "2025-04-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-04-05",
+          "date_posted": "2025-04-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        },
+        {
+          "date_transacted": "2025-03-28",
+          "date_posted": "2025-03-28",
+          "amount": 110.0,
+          "description": "WHOLE FOODS MARKET"
+        },
+        {
+          "date_transacted": "2025-03-25",
+          "date_posted": "2025-03-25",
+          "amount": -200.0,
+          "description": "AUTOPAY - THANK YOU"
+        },
+        {
+          "date_transacted": "2025-03-22",
+          "date_posted": "2025-03-22",
+          "amount": 45.0,
+          "description": "EXXON MOBIL"
+        },
+        {
+          "date_transacted": "2025-03-20",
+          "date_posted": "2025-03-20",
+          "amount": 38.5,
+          "description": "INTEREST CHARGE: PURCHASES"
+        },
+        {
+          "date_transacted": "2025-03-15",
+          "date_posted": "2025-03-15",
+          "amount": 85.0,
+          "description": "AMAZON.COM"
+        },
+        {
+          "date_transacted": "2025-03-10",
+          "date_posted": "2025-03-10",
+          "amount": 65.0,
+          "description": "CHILIS RESTAURANT"
+        },
+        {
+          "date_transacted": "2025-03-05",
+          "date_posted": "2025-03-05",
+          "amount": 15.99,
+          "description": "NETFLIX.COM"
+        }
+      ]
+    }
+  ]
+}
