@@ -1,12 +1,12 @@
 """
-Stage 3 – Transaction Memo Cleaner
+Stage 3 - Transaction Memo Cleaner
 
 Three-stage pipeline that normalises raw bank/brokerage transaction memos into
 clean merchant names suitable for downstream LLM analysis:
 
-  1. spaCy  – regex noise stripping + NLP-guided token filtering (always runs)
-  2. BERT   – NER-based ORG entity extraction via dslim/bert-base-NER (always runs)
-  3. Qwen 3 – LLM normalisation via llama_cpp (runs when BERT confidence < threshold)
+  1. spaCy  - regex noise stripping + NLP-guided token filtering (always runs)
+  2. BERT   - NER-based ORG entity extraction via dslim/bert-base-NER (always runs)
+  3. Qwen 3 - LLM normalisation via llama_cpp (runs when BERT confidence < threshold)
 
 All models are loaded lazily on first use.
 """
@@ -27,7 +27,7 @@ from custom_dataclasses.user_data import User, Transaction
 
 
 # ---------------------------------------------------------------------------
-# Stage 1 helpers – spaCy / regex noise stripping
+# Stage 1 helpers - spaCy / regex noise stripping
 # ---------------------------------------------------------------------------
 
 # Patterns applied left-to-right; order matters (most specific first).
@@ -125,7 +125,7 @@ def _spacy_clean(nlp, text: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Stage 2 helpers – BERT NER
+# Stage 2 helpers - BERT NER
 # ---------------------------------------------------------------------------
 
 def _bert_extract_org(
@@ -155,7 +155,7 @@ def _bert_extract_org(
 
 
 # ---------------------------------------------------------------------------
-# Stage 3 helpers – Qwen 3 via llama_cpp
+# Stage 3 helpers - Qwen 3 via llama_cpp
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -192,7 +192,7 @@ def download_qwen3_model(models_dir: Path = _MODELS_DIR) -> Path:
 
 
 # ---------------------------------------------------------------------------
-# Stage 3 helpers – Qwen 3 via llama_cpp
+# Stage 3 helpers - Qwen 3 via llama_cpp
 # ---------------------------------------------------------------------------
 
 _LLM_SYSTEM = (
@@ -257,9 +257,9 @@ class TransactionCleaner:
     Normalises raw transaction memos into clean merchant names.
 
     Pipeline per memo:
-        1. spaCy  – regex noise + NLP token filtering          (always)
-        2. BERT   – ORG entity extraction (dslim/bert-base-NER)(always)
-        3. Qwen 3 – LLM normalisation via llama_cpp            (when BERT < threshold)
+        1. spaCy  - regex noise + NLP token filtering          (always)
+        2. BERT   - ORG entity extraction (dslim/bert-base-NER)(always)
+        3. Qwen 3 - LLM normalisation via llama_cpp            (when BERT < threshold)
 
     Parameters
     ----------
@@ -355,10 +355,10 @@ class TransactionCleaner:
 
         self._ensure_base_loaded()
 
-        # Stage 1 – spaCy
+        # Stage 1 - spaCy
         spacy_result = _spacy_clean(self._nlp, memo)
 
-        # Stage 2 – BERT NER
+        # Stage 2 - BERT NER
         bert_result, _ = _bert_extract_org(
             self._ner,
             spacy_result or memo,
@@ -367,7 +367,7 @@ class TransactionCleaner:
         if bert_result:
             return _smart_title(bert_result)
 
-        # Stage 3 – Qwen 3 (only when BERT is not confident)
+        # Stage 3 - Qwen 3 (only when BERT is not confident)
         if self._llm_model_path:
             self._load_llm()
             return _llm_extract_merchant(self._llm, memo, spacy_result)

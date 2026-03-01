@@ -22,6 +22,7 @@ Usage:
 import os
 import re
 import sys
+from collections import defaultdict
 from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
@@ -62,6 +63,10 @@ TAXONOMY: Dict[str, List[str]] = {
         "Groceries and supermarket",
         "Restaurants, fast food, and takeout",
         "Coffee and cafes",
+        "Bars, pubs, and nightclubs",
+        "Food delivery",
+        "Alcohol stores",
+        "Other food and dining",
     ],
     "Transportation": [
         "Fuel and gas station",
@@ -70,6 +75,8 @@ TAXONOMY: Dict[str, List[str]] = {
         "Public transit",
         "Ride share such as Uber or Lyft",
         "Parking",
+        "Vehicle maintenance and repairs",
+        "Other transportation",
     ],
     "Financial Obligations": [
         "Credit card payment",
@@ -81,37 +88,49 @@ TAXONOMY: Dict[str, List[str]] = {
         "NSF fee or overdraft fee",
         "Interest charge",
         "Payday loan or high-interest lending",
+        "Other financial obligation or risk signal",
     ],
     "Healthcare": [
         "Pharmacy and prescriptions",
         "Medical, dental, or vision appointment",
         "Health or dental insurance premium",
+        "Other healthcare",
     ],
     "Telecommunications": [
         "Mobile phone or internet service",
         "Cable, satellite, or streaming subscription",
+        "Other telecommunications",
     ],
     "Shopping and Retail": [
         "Clothing and apparel",
         "Electronics and technology",
         "General retail or department store",
         "Home goods and furniture",
+        "Other shopping and retail",
     ],
     "Entertainment and Leisure": [
         "Entertainment and recreation",
+        "Movies and theaters",
+        "Concerts and live events",
+        "Museums and cultural sites",
         "Travel, hotels, or flights",
         "Gym and fitness",
         "Personal care and beauty",
+        "Other entertainment and leisure",
     ],
     "Education": [
         "Tuition and education fees",
         "Books, supplies, or online courses",
+        "Student loan payment",
+        "Other education",
     ],
     "Transfers and Payments": [
         "e-Transfer",
         "Internal bank transfer",
         "Bill payment",
         "Insurance premium payment",
+        "Charitable donation",
+        "Other transfer or payment",
     ],
     "Other": [
         "Miscellaneous or unclassified transaction",
@@ -200,14 +219,14 @@ class TransactionCategorizer:
     ----------
     model_name : str
         Any HuggingFace zero-shot-classification model.
-        Default: facebook/bart-large-mnli (~1.6 GB, best general accuracy).
-        Lighter alternative: cross-encoder/nli-deberta-v3-small (~180 MB).
+        Default: MoritzLaurer/deberta-v3-xsmall-zeroshot-v1.1-all-33
+        Heavier alternative: facebook/bart-large-mnli
     confidence_threshold : float
         Minimum top-label score (pass 1) to accept a category. Below this the
         transaction falls into ["Other", "Miscellaneous or unclassified transaction"].
     """
 
-    ZS_MODEL  = "facebook/bart-large-mnli"
+    ZS_MODEL  = "MoritzLaurer/deberta-v3-xsmall-zeroshot-v1.1-all-33"
     THRESHOLD = 0.20
 
     def __init__(
@@ -293,21 +312,119 @@ class TransactionCategorizer:
     # Batch / User-level API
     # ------------------------------------------------------------------
 
-    def categorize_users(self, users: List[User]) -> List[User]:
+    def categorize_users(self, users: List[User], batch_size: int = 32) -> List[User]:
         """
         Populate Transaction.category and Transaction.subcategory for every
         transaction in the user list.
         Reads Transaction.cleaned_description — run TransactionCleaner first.
         Modifies transactions in-place and returns the same list.
+
+        Uses batched zero-shot inference for throughput: all descriptions that
+        fall through the known-category lookup are processed in a single pass 1
+        batch call, then grouped by top-level result for a batched pass 2 call.
+
+        Parameters
+        ----------
+        batch_size : int
+            Number of descriptions per inference batch (default 32).
         """
         self._load()
+
+        # --- Collect all transactions that need ML classification ---
+        # Transactions that hit _KNOWN_CATEGORIES are resolved immediately.
+        pending: List[Tuple[object, str, Optional[Decimal]]] = []  # (txn, desc, amount)
+
         for user in users:
             for account in user.accounts:
                 for txn in account.transactions:
-                    txn.category, txn.subcategory = self.categorize(
-                        txn.cleaned_description or txn.memo,
-                        amount=txn.amount,
-                    )
+                    desc = txn.cleaned_description or txn.memo
+                    if not desc or not desc.strip():
+                        txn.category  = ["Other"]
+                        txn.subcategory = "Miscellaneous or unclassified transaction"
+                        continue
+                    known = _check_known_category(desc)
+                    if known:
+                        txn.category    = [known[0]]
+                        txn.subcategory = known[1]
+                    else:
+                        pending.append((txn, desc, txn.amount))
+
+        if not pending:
+            return users
+
+        # --- Pass 1: batch zero-shot top-level classification ---
+        descs   = [desc for _, desc, _ in pending]
+        amounts = [amt  for _, _, amt  in pending]
+
+        # The pipeline requires the same candidate_labels for all items in one
+        # call, so we use the standard label order and apply the income hint
+        # in post-processing via score inspection.
+        pass1_results = self._classifier(
+            descs,
+            candidate_labels=_TOP_LABELS,
+            multi_label=False,
+            batch_size=batch_size,
+        )
+
+        # --- Apply income hint in post-processing and filter by threshold ---
+        # For each txn determine its top_label / score after the optional hint.
+        top_labels_out: List[Optional[str]] = []
+        for i, result in enumerate(pass1_results):
+            scores_map: Dict[str, float] = dict(zip(result["labels"], result["scores"]))
+            amt = amounts[i]
+            if amt is not None and amt > Decimal("200"):
+                # Boost Income score to ensure it wins when it's already competitive
+                income_score = scores_map.get("Income", 0.0)
+                max_score    = max(scores_map.values())
+                if income_score >= max_score * 0.75:
+                    top_labels_out.append("Income")
+                    continue
+            # Normal: take highest scoring label
+            best_label = result["labels"][0]
+            best_score = float(result["scores"][0])
+            if best_score < self._threshold:
+                top_labels_out.append(None)  # will become Other
+            else:
+                top_labels_out.append(best_label)
+
+        # --- Pass 2: batch sub-category classification, grouped by top_label ---
+        # Group indices by top_label to minimise separate pipeline calls.
+        groups: Dict[str, List[int]] = defaultdict(list)
+        for i, top_label in enumerate(top_labels_out):
+            groups[top_label or "Other"].append(i)
+
+        sub_labels_out: List[str] = [""] * len(pending)
+
+        for top_label, indices in groups.items():
+            if top_label == "Other":
+                for i in indices:
+                    sub_labels_out[i] = "Miscellaneous or unclassified transaction"
+                continue
+
+            sub_candidates = TAXONOMY[top_label]
+            if len(sub_candidates) == 1:
+                for i in indices:
+                    sub_labels_out[i] = sub_candidates[0]
+                continue
+
+            batch_descs = [descs[i] for i in indices]
+            pass2_results = self._classifier(
+                batch_descs,
+                candidate_labels=sub_candidates,
+                multi_label=False,
+                batch_size=batch_size,
+            )
+            if isinstance(pass2_results, dict):
+                pass2_results = [pass2_results]
+            for j, result in enumerate(pass2_results):
+                sub_labels_out[indices[j]] = result["labels"][0]
+
+        # --- Write results back ---
+        for i, (txn, _, _) in enumerate(pending):
+            top = top_labels_out[i] or "Other"
+            txn.category    = [top]
+            txn.subcategory = sub_labels_out[i]
+
         return users
 
 
