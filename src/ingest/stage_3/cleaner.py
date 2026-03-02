@@ -55,6 +55,31 @@ _NOISE_PATTERNS = [
 
 _NOISE_RES = [re.compile(p, re.IGNORECASE) for p in _NOISE_PATTERNS]
 
+# ---------------------------------------------------------------------------
+# "Dirty" flag patterns — if any match, the memo needs the full ML pipeline.
+# If none match the memo is already a merchant name in ALLCAPS → smart-title.
+# ---------------------------------------------------------------------------
+_DIRTY_PATTERNS = [
+    re.compile(r'\*[A-Z0-9]+', re.I),                                   # Amazon: *AB12CD
+    re.compile(r'#\s*\d+'),                                               # store/ref: #1234
+    re.compile(r'\bREF:?\s*\w+', re.I),                                  # REF: ABC123
+    re.compile(r'\b(TXN|IDP|POS|DEB|CHQ|ACH|PYMT|PMT|DEBIT|CREDIT)\b', re.I),
+    re.compile(r'\b(PURCHASE|PAYMENT|TRANSFER|DEPOSIT|WITHDRAWAL)\b', re.I),
+    re.compile(r'\b[A-Z0-9]{10,}\b'),                                    # long alphanumeric codes
+    re.compile(r'\b\d{4,}\b'),                                           # 4+ digit ref numbers
+    re.compile(r'\b(BC|AB|ON|QC|NS|NB|MB|SK|PE|NL|NT|NU|YT)\b'),       # Canadian provinces
+    re.compile(r'\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b'),                       # postal codes
+    re.compile(r'\b\d{1,2}[-/]\d{1,2}[-/]\d{2,4}\b'),                  # embedded dates
+    re.compile(r'\$\d+\.?\d*'),                                          # dollar amounts
+    re.compile(r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b'),                    # phone numbers
+    re.compile(r'\.(COM|CA|NET|ORG)\b', re.I),                          # URL fragments
+]
+
+
+def _has_dirty_flags(text: str) -> bool:
+    """Return True if the memo contains noise patterns that require ML cleaning."""
+    return any(rx.search(text) for rx in _DIRTY_PATTERNS)
+
 
 # ---------------------------------------------------------------------------
 # Known banking term normalizations (checked before any ML runs)
@@ -404,6 +429,11 @@ class TransactionCleaner:
         known = _check_known_normalization(memo)
         if known:
             return known
+
+        # Fast path: memo is already a clean merchant name in ALLCAPS with no
+        # noise flags — skip the ML pipeline entirely and just normalise casing.
+        if not _has_dirty_flags(memo):
+            return _smart_title(memo.strip())
 
         self._ensure_base_loaded()
 

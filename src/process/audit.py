@@ -5,7 +5,7 @@ Persists every pipeline decision to a local SQLite database so each assessment
 is traceable, reproducible, and available for review.  The human override path
 also writes through this layer so the full decision lifecycle is captured.
 
-Database location: ``<project_root>/audit_logs/audit.db``
+Database location: ``<project_root>/audit_logs/audit.sqlite``
 Table:             ``decisions``
 """
 
@@ -25,7 +25,7 @@ from typing import Dict, List, Optional
 # Project root — three levels up from src/process/audit.py
 # ---------------------------------------------------------------------------
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
-_DEFAULT_DB   = _PROJECT_ROOT / "audit_logs" / "audit.db"
+_DEFAULT_DB   = _PROJECT_ROOT / "audit_logs" / "audit.sqlite"
 
 
 # ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ class AuditLog:
     Parameters
     ----------
     db_path : str or Path, optional
-        Defaults to ``<project_root>/audit_logs/audit.db``.
+        Defaults to ``<project_root>/audit_logs/audit.sqlite``.
     """
 
     def __init__(self, db_path: str | Path | None = None):

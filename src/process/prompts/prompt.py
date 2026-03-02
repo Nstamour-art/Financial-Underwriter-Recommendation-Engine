@@ -144,7 +144,8 @@ Output schema:
   "confidence": <float 0.0-1.0, your confidence in this assessment given the data quality and completeness>,
   "summary": <2-3 sentence plain-English explanation of the decision>,
   "rejection_reason": <string if rejected, otherwise null>,
-  "recommended_products": [<product names from the list below; empty array if rejected>]
+  "recommended_products": [<product names from the list below, ranked from MOST to LEAST suitable; empty array if rejected>],
+  "top_product_reason": <1-2 sentence explanation of why the first product in recommended_products is the best fit for this client; null if no products recommended>
 }}
 
 Scoring bands: 750-900 excellent, 650-749 good (approved), 550-649 fair (conditional), 300-549 poor (rejected).
@@ -155,7 +156,8 @@ Signals that raise the score: consistent income, positive monthly net, low oblig
 Product eligibility rules:
 - Wealthsimple Credit Card: only recommend when estimated annual income ≥ CAD $60,000.
 - Crypto: only recommend when monthly net cash flow is positive AND nsf_count = 0 AND overdraft_count = 0.
-- If decision is "rejected", recommended_products must be an empty array.
+- If decision is "rejected", recommended_products must be an empty array and top_product_reason must be null.
+- Rank recommended_products so the single best-fit product is first. Consider income match, risk profile, and client behaviour when ranking.
 - Use each product's Guidance note to judge fit; do not recommend products that are clearly unsuitable.
 
 Available products:

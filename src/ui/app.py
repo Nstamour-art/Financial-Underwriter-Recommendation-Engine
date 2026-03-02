@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import threading
+import time
 import uuid
 from datetime import date, timedelta
 from typing import Dict, List, Literal, Optional
@@ -73,7 +74,7 @@ st.set_page_config(
     page_icon=os.path.join(_PROJ_ROOT, "static", "imgs",
                                 "icon1.png"),
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 
@@ -115,12 +116,12 @@ def _csv_upload_dialog() -> None:
     Modal dialog for CSV upload configuration.
 
     Lets the user:
-      1.  Enter a client name (cosmetic — UUID stays internal).
-      2.  Upload one or more CSV statement files.
-      3.  For each file, pick an account type and an *account group*.
-          Files sharing the same group are merged (concatenated) before
-          processing — this is how multiple monthly statements for the
-          same account become a single 12-month history.
+        1.  Enter a client name (cosmetic — UUID stays internal).
+        2.  Upload one or more CSV statement files.
+        3.  For each file, pick an account type and an *account group*.
+            Files sharing the same group are merged (concatenated) before
+            processing — this is how multiple monthly statements for the
+            same account become a single 12-month history.
     """
     st.caption(
         "Upload transaction CSVs and organise them into account groups. "
@@ -275,7 +276,7 @@ def _csv_upload_dialog() -> None:
     with c_confirm:
         confirm_disabled = not uploaded or not client_name.strip()
         if st.button("Confirm", type="primary", width='stretch',
-                     disabled=confirm_disabled):
+                        disabled=confirm_disabled):
             st.session_state.csv_client_name = client_name.strip()
             st.session_state.csv_uploads     = uploaded
             st.session_state.csv_file_config = file_config
@@ -496,19 +497,18 @@ def _check_csv_date_coverage(csv_data: Dict[str, List[CSVFileInput]]) -> Optiona
 
 def _start_pipeline(config: dict) -> None:
     """
-    Launch the pipeline in a daemon thread and track progress via a shared
-    ctx dict stored in session state.  The Streamlit script polls ctx on each
-    rerun — no session state is written from the background thread.
+    Run the full pipeline in a daemon thread.
+
+    Models are loaded lazily on first call and kept alive in the Streamlit
+    process via @st.cache_resource, so subsequent runs skip cold-start entirely.
     """
     ctx: dict = {
-        "done":             False,
-        "cancelled":        False,
-        "cancel_requested": False,
-        "results":          None,
-        "error":            None,
-        "frac":             0.0,
-        "label":            "Initialising…",
-        "detail":           "",
+        "done":    False,
+        "results": None,
+        "error":   None,
+        "frac":    0.0,
+        "label":   "Initialising…",
+        "detail":  "",
     }
     st.session_state._pipeline_ctx     = ctx
     st.session_state.running           = True
@@ -516,54 +516,81 @@ def _start_pipeline(config: dict) -> None:
     st.session_state.override_decision = None
     st.session_state.employee_notes    = ""
 
-    # Read uploaded files on the main thread before hand-off
+    # Read uploaded files on the main thread (UploadedFile objects can't cross threads)
     csv_data = _build_csv_data(config) if config["source"] == "CSV Upload" else None
 
+    if csv_data is not None:
+        coverage_error = _check_csv_date_coverage(csv_data)
+        if coverage_error:
+            ctx["error"] = coverage_error
+            ctx["done"]  = True
+            return
+
+    def on_progress(label: str, detail: str, frac: float) -> None:
+        ctx["frac"]   = frac
+        ctx["label"]  = label
+        ctx["detail"] = detail
+
+    def on_sub_progress(done: int, total: int) -> None:
+        ctx["detail"] = f"{done:,} / {total:,} transactions"
+
     def _run() -> None:
-        def on_progress(label: str, detail: str, frac: float) -> None:
-            if ctx["cancel_requested"]:
-                raise InterruptedError("Cancelled by user")
-            ctx["frac"]   = frac
-            ctx["label"]  = label
-            ctx["detail"] = detail
-
-        def on_sub_progress(done: int, total: int) -> None:
-            ctx["detail"] = f"{done:,} / {total:,} transactions"
-
         try:
-            if csv_data is not None:
-                coverage_error = _check_csv_date_coverage(csv_data)
-                if coverage_error:
-                    ctx["error"] = coverage_error
-                    return
-
             orchestrator = Orchestrator(
                 api_provider           = config.get("api_provider"),
                 n_gpu_layers           = config.get("gpu_layers", 0),
                 ner_threshold          = config.get("ner_threshold", 0.85),
                 categorizer_batch_size = config.get("batch_size", 32),
             )
-            if config["source"] == "CSV Upload" and csv_data is not None:
-                ctx["results"] = orchestrator.run_from_csv(
-                    csv_data, on_progress=on_progress,
-                    on_sub_progress=on_sub_progress,
-                    client_name=config.get("client_name"))
-            else:
-                ctx["results"] = orchestrator.run_from_plaid_sandbox(
-                    start_date=config["start_date"],
-                    end_date=config["end_date"],
-                    selected_users=config.get("selected_users"),
-                    on_progress=on_progress,
-                    on_sub_progress=on_sub_progress,
+
+            if config["source"] == "CSV Upload" and csv_data:
+                results = orchestrator.run_from_csv(
+                    csv_data,
+                    on_progress     = on_progress,
+                    on_sub_progress = on_sub_progress,
+                    client_name     = config.get("client_name") or None,
                 )
-        except InterruptedError:
-            ctx["cancelled"] = True
+            else:
+                _sd = config.get("start_date")
+                start_date = _sd if isinstance(_sd, date) else date.fromisoformat(_sd) if _sd else None
+                _ed = config.get("end_date")
+                end_date = _ed if isinstance(_ed, date) else date.fromisoformat(_ed) if _ed else None
+                results = orchestrator.run_from_plaid_sandbox(
+                    start_date      = start_date,
+                    end_date        = end_date,
+                    selected_users  = config.get("selected_users") or None,
+                    on_progress     = on_progress,
+                    on_sub_progress = on_sub_progress,
+                )
+
+            ctx["results"] = results
+
         except Exception as exc:
             ctx["error"] = str(exc)
         finally:
             ctx["done"] = True
 
     threading.Thread(target=_run, daemon=True).start()
+
+
+@st.cache_resource(show_spinner=False)
+def _warm_models() -> bool:
+    """
+    Pre-load NLP models into cache so the first pipeline run has no cold-start.
+    Called once per Streamlit process via a background thread at startup.
+    Returns True when complete (cached value signals subsequent calls instantly).
+    """
+    try:
+        from ingest.stage_3.cleaner import TransactionCleaner
+        from ingest.stage_3.categorizer import TransactionCategorizer
+        _c = TransactionCleaner()
+        _c._load_spacy()
+        _c._load_ner()
+        _cat = TransactionCategorizer()
+        _cat._load()
+    except Exception:
+        pass
+    return True
 
 
 def _render_progress() -> None:
@@ -726,6 +753,40 @@ def _tab_overview(result: OrchestratorResult) -> None:
         st.metric("LLM provider", provider.title())
         st.metric("Runtime", f"{result.total_elapsed_seconds:.1f}s")
 
+    # --- Highlight product card ---
+    rec_products = uw.get("recommended_products", [])
+    top_reason   = uw.get("top_product_reason")
+    if rec_products:
+        top_name = rec_products[0]
+        # Look up the Product object for richer detail
+        _prod_obj = next(
+            (p for p in PRODUCTS.products if p.name.lower() == top_name.lower()),
+            None,
+        )
+        with st.container(border=True):
+            _hl_left, _hl_right = st.columns([1, 3])
+            with _hl_left:
+                st.markdown(
+                    '<p style="font-size:12px;color:#686664;margin:0 0 4px 0;">' 
+                    'TOP RECOMMENDED PRODUCT</p>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(f"### {html_lib.escape(top_name)}")
+                if _prod_obj:
+                    st.badge(_prod_obj.type.title(), color="green")
+            with _hl_right:
+                if _prod_obj:
+                    st.markdown(
+                        f'<p style="margin:0">{html_lib.escape(_prod_obj.description)}</p>',
+                        unsafe_allow_html=True,
+                    )
+                if top_reason:
+                    st.info(top_reason, icon="\u2728")
+                if _prod_obj and _prod_obj.min_annual_income:
+                    st.caption(
+                        f"Minimum annual income: **${_prod_obj.min_annual_income:,}**"
+                    )
+
     st.divider()
 
     cf = result.monthly_cash_flow()
@@ -869,15 +930,15 @@ def _tab_spending(result: OrchestratorResult) -> None:
 def _product_card(product, *, highlighted: bool = False) -> str:
     """Return an HTML card string for a single product."""
     bg = ("background:#e6f7f4; border:1px solid #00C8A0;"
-          if highlighted else "background:#ffffff; border:1px solid #e4e2e1;")
+            if highlighted else "background:#ffffff; border:1px solid #e4e2e1;")
     income = (f'<p style="margin:8px 0 0 0;font-size:12px;color:#686664;">'
-              f'Min income: ${product.min_annual_income:,}/yr</p>'
-              if product.min_annual_income else "")
+                f'Min income: ${product.min_annual_income:,}/yr</p>'
+                if product.min_annual_income else "")
     return f"""
     <div style="{bg} border-radius:10px; padding:16px; margin:8px 0;
-                 height:300px; box-sizing:border-box; overflow:hidden;">
+                    height:300px; box-sizing:border-box; overflow:hidden;">
         <span style="background:#e4e2e1;color:#686664;padding:5px 10px;
-                     border-radius:10px;font-size:12px;">
+                        border-radius:10px;font-size:12px;">
             {html_lib.escape(product.type)}
         </span>
         <h4 style="margin:10px 0 6px 0;font-size:16px;">{html_lib.escape(product.name)}</h4>
@@ -1188,18 +1249,5 @@ def _welcome() -> None:
     )
     splash_path = os.path.join(_PROJ_ROOT, "static", "imgs", "videoframe_4033.png")
     if os.path.exists(splash_path):
-        st.image(splash_path, width='content',)
-    
-    st.markdown(
-        "To get started, please select a data source and configure the analysis parameters in the sidebar, then click 'Run Analysis'.",
-        text_alignment='center'
-    )
-    st.markdown("Once the analysis is complete, you can explore the results across different tabs.", text_alignment='center')
-    
-    st.divider()
-    st.markdown(
-        """
-        **Please note:** This demo uses synthetic data and is intended for illustrative purposes only. The underwriting decisions and product recommendations generated by this tool should not be considered final or used in real-world applications without further review by a qualified underwriter.
-        """,
-        text_alignment='center'
-    )
+        with open(splash_path, "rb") as _f:
+            st.image(_f.read(), width='stretch')

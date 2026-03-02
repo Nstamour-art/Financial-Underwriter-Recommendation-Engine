@@ -455,8 +455,8 @@ class Orchestrator:
                 _emit(on_progress, "categorize", msg, _STEP_FRACTIONS["clean"])
 
             categorizer.categorize_users(users, batch_size=self._categorizer_batch_size,
-                                         on_txn_progress=on_sub_progress,
-                                         on_status=on_cat_status)
+                                            on_txn_progress=on_sub_progress,
+                                            on_status=on_cat_status)
             cat_elapsed = time.monotonic() - t0
             cat_step = StepResult(
                 name="categorize", label=_STEP_LABELS["categorize"],
