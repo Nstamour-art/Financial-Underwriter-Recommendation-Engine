@@ -18,6 +18,21 @@ class PlaidAPI:
     def __init__(self):
         self.client = self._build_client()
     
+    @staticmethod
+    def list_sandbox_users() -> list[tuple[str, str]]:
+        """
+        Return (label, username) pairs from env vars without requiring API credentials.
+        Safe to call from the UI layer before any API connection is made.
+        """
+        load_dotenv()
+        users = []
+        for n in range(1, 4):
+            username = os.getenv(f"PLAID_USER_{n}_USERNAME", "").strip()
+            label    = os.getenv(f"PLAID_USER_{n}_LABEL", f"User {n}").strip()
+            if username:
+                users.append((label, username))
+        return users
+
     def _load_sandbox_users(self) -> list[tuple[str, str, str]]:
         """
         Load sandbox test users from environment variables.
@@ -164,19 +179,27 @@ class PlaidAPI:
         self,
         start_date: date | None = None,
         end_date: date | None = None,
+        selected_labels: list[str] | None = None,
     ) -> dict[str, dict]:
         """
         Create sandbox access tokens for each test user, fetch all their accounts,
         and return transactions grouped by account.
 
-        Returns:
-            {
-                "<user label>": {
-                    "accounts": [...],
-                    "transactions_by_account": {"<account_id>": [...], ...}
-                },
-                ...
-            }
+        Parameters
+        ----------
+        selected_labels : list[str] | None
+            When provided, only fetch for users whose label appears in this list.
+            Defaults to None (fetch all configured users).
+
+        Returns
+        -------
+        {
+            "<user label>": {
+                "accounts": [...],
+                "transactions_by_account": {"<account_id>": [...], ...}
+            },
+            ...
+        }
         """
         if end_date is None:
             end_date = date.today()
@@ -187,6 +210,8 @@ class PlaidAPI:
         results: dict[str, dict] = {}
 
         for institution_id, username, label in self._load_sandbox_users():
+            if selected_labels is not None and label not in selected_labels:
+                continue
             print(f"Fetching data for: {label} ({username})")
             try:
                 access_token = self.create_sandbox_access_token(client, institution_id, username)

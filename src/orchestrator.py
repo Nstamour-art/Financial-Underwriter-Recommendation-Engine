@@ -324,6 +324,7 @@ class Orchestrator:
         self,
         start_date: Optional[date] = None,
         end_date:   Optional[date] = None,
+        selected_users: Optional[List[str]] = None,
         on_progress: Optional[Callable[[str, str, float], None]] = None,
     ) -> List[OrchestratorResult]:
         """
@@ -334,6 +335,8 @@ class Orchestrator:
         ----------
         start_date : date, optional   defaults to 365 days ago
         end_date   : date, optional   defaults to today
+        selected_users : list[str], optional
+            Labels of sandbox users to fetch.  Defaults to all configured users.
         on_progress : callable, optional
         """
         if end_date is None:
@@ -343,7 +346,11 @@ class Orchestrator:
 
         def _load(_on_progress):
             api = PlaidAPI()
-            raw = api.fetch_all_sandbox_transactions(start_date=start_date, end_date=end_date)
+            raw = api.fetch_all_sandbox_transactions(
+                start_date=start_date,
+                end_date=end_date,
+                selected_labels=selected_users,
+            )
             users = PlaidDataConverter.convert(raw)
             _emit(_on_progress, "load", f"Fetched {len(users)} user(s) from Plaid sandbox")
             return users

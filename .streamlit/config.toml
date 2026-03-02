@@ -8,15 +8,18 @@ backgroundColor        = "#fcfcfc"
 secondaryBackgroundColor = "#f1f0f0"
 textColor              = "#32302f"
 font                   = "The Future"
-borderColor            = "#e4e2e1"
-baseRadius             = "small"
+headingFont            = "Tiempos"
+borderColor            = "#32302f"
+baseRadius             = "full"
+showSidebarBorder      = true
 
 [theme.sidebar]
-backgroundColor          = "#111111"
-secondaryBackgroundColor = "#1a1a1a"
-textColor                = "#C0BDB9"
+backgroundColor          = "#fcfcfc"
+secondaryBackgroundColor = "#C0BDB9"
+textColor                = "#32302f"
 primaryColor             = "#00C8A0"
-borderColor              = "#333333"
+borderColor              = "#32302f"
+
 
 [[theme.fontFaces]]
 family = "The Future"
@@ -41,3 +44,9 @@ family = "The Future"
 url    = "app/static/fonts/TheFuture-MediumItalic.93e73150.woff2"
 style  = "italic"
 weight = 500
+
+[[theme.fontFaces]]
+family = "Tiempos"
+url    = "app/static/fonts/TiemposText-Regular.68f04cf8.woff2"
+style  = "normal"
+weight = 400 

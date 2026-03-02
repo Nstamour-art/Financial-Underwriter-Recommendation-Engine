@@ -14,6 +14,7 @@ import io
 import json
 import os
 import sys
+import threading
 from datetime import date, timedelta
 from typing import Dict, List, Literal, Optional
 
@@ -34,6 +35,7 @@ _PROJ_ROOT = os.path.dirname(_SRC)                       # project root
 sys.path.insert(0, _SRC)
 
 from custom_dataclasses import CSVFileInput
+from ingest.stage_1.plaid_api import PlaidAPI
 from orchestrator import Orchestrator, OrchestratorResult
 from process import PRODUCTS
 
@@ -72,7 +74,8 @@ _ACCOUNT_TYPES: Dict[str, Optional[tuple]] = {
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="WS Underwriting",
-    page_icon="💚",
+    page_icon=os.path.join(_PROJ_ROOT, "static", "imgs",
+                                "icon1.png"),
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -86,13 +89,11 @@ def _init_state() -> None:
     for k, v in {
         "results":           None,
         "running":           False,
-        "progress_label":    "",
-        "progress_detail":   "",
-        "progress_frac":     0.0,
-        "progress_log":      [],
         "selected_idx":      0,
         "override_decision": None,
         "employee_notes":    "",
+        "pending_config":    None,
+        "_pipeline_ctx":     None,
     }.items():
         if k not in st.session_state:
             st.session_state[k] = v
@@ -102,9 +103,9 @@ def _init_state() -> None:
 # Sidebar
 # ---------------------------------------------------------------------------
 
-def _render_sidebar() -> Optional[dict]:
+def _render_sidebar() -> None:
     logo_path = os.path.join(_PROJ_ROOT, "static", "imgs",
-                             "ws-wordmark-refresh.3499def3.svg")
+                                "ws-wordmark-refresh.3499def3.svg")
     if os.path.exists(logo_path):
         st.logo(logo_path)
 
@@ -113,17 +114,17 @@ def _render_sidebar() -> Optional[dict]:
         st.caption("Internal advisory tool")
         st.divider()
 
-        st.markdown("**Data Source**")
+        st.text(body="Data Source")
         source = st.radio("source", ["CSV Upload", "Plaid Sandbox"],
-                          label_visibility="collapsed")
+                            label_visibility="collapsed")
         config: dict = {"source": source}
 
         if source == "CSV Upload":
-            st.markdown("**Client ID**")
+            st.text(body="Client ID")
             config["client_id"] = st.text_input(
                 "cid", value="client_001", label_visibility="collapsed")
 
-            st.markdown("**Transaction files**")
+            st.text(body="Transaction files")
             uploaded = st.file_uploader(
                 "csv", type=["csv"], accept_multiple_files=True,
                 label_visibility="collapsed",
@@ -131,7 +132,7 @@ def _render_sidebar() -> Optional[dict]:
             config["uploaded"] = uploaded
 
             if uploaded:
-                st.markdown("**Account types**")
+                st.text(body="Account types")
                 acct_types: Dict[str, str] = {}
                 for f in uploaded:
                     acct_types[f.name] = st.selectbox(
@@ -140,7 +141,18 @@ def _render_sidebar() -> Optional[dict]:
                     )
                 config["acct_types"] = acct_types
         else:
-            st.markdown("**Date range**")
+            sandbox_users = PlaidAPI.list_sandbox_users()  # [(label, username), ...]
+            all_labels = [label for label, _ in sandbox_users]
+
+            st.text(body="Sandbox users")
+            selected_users: List[str] = st.multiselect(
+                "users", options=all_labels, default=[],
+                placeholder="Select one or more users…",
+                label_visibility="collapsed",
+            )
+            config["selected_users"] = selected_users
+
+            st.text(body="Date range")
             c1, c2 = st.columns(2)
             with c1:
                 config["start_date"] = st.date_input(
@@ -150,7 +162,7 @@ def _render_sidebar() -> Optional[dict]:
 
         st.divider()
 
-        st.markdown("**LLM Provider**")
+        st.text(body="LLM Provider")
         prov = st.radio("prov",
                         ["Auto (prefer Anthropic)", "Anthropic", "OpenAI"],
                         label_visibility="collapsed")
@@ -171,23 +183,23 @@ def _render_sidebar() -> Optional[dict]:
         st.divider()
 
         run_disabled = (
-            source == "CSV Upload"
-            and (not config.get("uploaded")
-                 or not config.get("client_id", "").strip())
+            (source == "CSV Upload"
+                and (not config.get("uploaded")
+                    or not config.get("client_id", "").strip()))
+            or (source == "Plaid Sandbox"
+                and not config.get("selected_users"))
         )
         if st.button("Run Analysis", type="primary",
-                     disabled=run_disabled or st.session_state.running):
-            return config
+                        disabled=run_disabled or st.session_state.running):
+            st.session_state.pending_config = config
+            st.rerun()
 
         if st.session_state.results is not None:
             if st.button("Clear & start over"):
                 st.session_state.results           = None
-                st.session_state.progress_log      = []
                 st.session_state.override_decision = None
                 st.session_state.employee_notes    = ""
                 st.rerun()
-
-    return None
 
 
 # ---------------------------------------------------------------------------
@@ -209,47 +221,88 @@ def _build_csv_data(config: dict) -> Dict[str, List[CSVFileInput]]:
 
 
 # ---------------------------------------------------------------------------
-# Pipeline runner
+# Pipeline runner (threaded)
 # ---------------------------------------------------------------------------
 
-def _run_pipeline(config: dict) -> None:
+def _start_pipeline(config: dict) -> None:
+    """
+    Launch the pipeline in a daemon thread and track progress via a shared
+    ctx dict stored in session state.  The Streamlit script polls ctx on each
+    rerun — no session state is written from the background thread.
+    """
+    ctx: dict = {
+        "done":    False,
+        "results": None,
+        "error":   None,
+        "frac":    0.0,
+        "label":   "Initialising…",
+        "detail":  "",
+        "log":     [],
+    }
+    st.session_state._pipeline_ctx     = ctx
     st.session_state.running           = True
     st.session_state.results           = None
-    st.session_state.progress_log      = []
-    st.session_state.progress_frac     = 0.0
     st.session_state.override_decision = None
     st.session_state.employee_notes    = ""
 
-    orchestrator = Orchestrator(
-        api_provider           = config.get("api_provider"),
-        n_gpu_layers           = config.get("gpu_layers", 0),
-        ner_threshold          = config.get("ner_threshold", 0.85),
-        categorizer_batch_size = config.get("batch_size", 32),
-    )
-    log: list = []
+    # Read uploaded files on the main thread before hand-off
+    csv_data = _build_csv_data(config) if config["source"] == "CSV Upload" else None
 
-    def on_progress(label: str, detail: str, frac: float) -> None:
-        st.session_state.progress_label  = label
-        st.session_state.progress_detail = detail
-        st.session_state.progress_frac   = frac
-        log.append({"label": label, "detail": detail, "frac": frac})
-        st.session_state.progress_log = list(log)
+    def _run() -> None:
+        def on_progress(label: str, detail: str, frac: float) -> None:
+            ctx["frac"]   = frac
+            ctx["label"]  = label
+            ctx["detail"] = detail
+            ctx["log"].append({"label": label, "detail": detail, "frac": frac})
 
-    try:
-        if config["source"] == "CSV Upload":
-            results = orchestrator.run_from_csv(
-                _build_csv_data(config), on_progress=on_progress)
-        else:
-            results = orchestrator.run_from_plaid_sandbox(
-                start_date=config["start_date"],
-                end_date=config["end_date"],
-                on_progress=on_progress,
+        try:
+            orchestrator = Orchestrator(
+                api_provider           = config.get("api_provider"),
+                n_gpu_layers           = config.get("gpu_layers", 0),
+                ner_threshold          = config.get("ner_threshold", 0.85),
+                categorizer_batch_size = config.get("batch_size", 32),
             )
-        st.session_state.results = results
-    except Exception as exc:
-        st.session_state.results = [_error_result(str(exc))]
-    finally:
-        st.session_state.running = False
+            if config["source"] == "CSV Upload" and csv_data is not None:
+                ctx["results"] = orchestrator.run_from_csv(
+                    csv_data, on_progress=on_progress)
+            else:
+                ctx["results"] = orchestrator.run_from_plaid_sandbox(
+                    start_date=config["start_date"],
+                    end_date=config["end_date"],
+                    selected_users=config.get("selected_users"),
+                    on_progress=on_progress,
+                )
+        except Exception as exc:
+            ctx["error"] = str(exc)
+        finally:
+            ctx["done"] = True
+
+    threading.Thread(target=_run, daemon=True).start()
+
+
+def _render_progress() -> None:
+    """Render a live progress bar and step log from the pipeline ctx dict."""
+    ctx   = st.session_state.get("_pipeline_ctx") or {}
+    frac  = float(ctx.get("frac", 0.0))
+    label = ctx.get("label", "Initialising…")
+    detail = ctx.get("detail", "")
+    log   = list(ctx.get("log", []))  # snapshot to avoid mutation mid-render
+
+    pct = int(frac * 100)
+    bar_text = f"**{label}**" + (f" — {detail}" if detail else "") + f"  ·  {pct}%"
+    st.progress(frac, text=bar_text)
+
+    if log:
+        st.divider()
+        for entry in log:
+            c1, c2 = st.columns([7, 1])
+            with c1:
+                line = f"✓ {entry['label']}"
+                if entry.get("detail"):
+                    line += f" — {entry['detail']}"
+                st.caption(line)
+            with c2:
+                st.caption(f"{int(entry['frac'] * 100)}%")
 
 
 def _error_result(msg: str) -> OrchestratorResult:
@@ -464,12 +517,12 @@ def _tab_spending(result: OrchestratorResult) -> None:
         return
 
     _PLOT_FONT = dict(family="The Future, Helvetica Neue, sans-serif",
-                      color=WS_TEXT)
+                        color=WS_TEXT)
 
     st.subheader("Monthly Cash Flow")
     cf_df   = pd.DataFrame(cf).T.reset_index().rename(columns={"index": "Month"})
     cf_long = cf_df.melt(id_vars="Month", value_vars=["income", "expenses", "net"],
-                         var_name="Type", value_name="CAD")
+                            var_name="Type", value_name="CAD")
     fig_cf = px.line(
         cf_long, x="Month", y="CAD", color="Type",
         color_discrete_map={"income": WS_SUCCESS, "expenses": WS_ERROR, "net": "#6366f1"},
@@ -486,10 +539,10 @@ def _tab_spending(result: OrchestratorResult) -> None:
     if sp:
         st.subheader("Monthly Spending by Category")
         sp_df = (pd.DataFrame(sp).T.fillna(0)
-                 .reset_index().rename(columns={"index": "Month"}))
+                    .reset_index().rename(columns={"index": "Month"}))
         cats = [c for c in sp_df.columns if c != "Month"]
         sp_long = sp_df.melt(id_vars="Month", value_vars=cats,
-                             var_name="Category", value_name="CAD")
+                                var_name="Category", value_name="CAD")
         chart_sp = (
             alt.Chart(sp_long)
             .mark_bar()
@@ -506,7 +559,7 @@ def _tab_spending(result: OrchestratorResult) -> None:
     if cat:
         st.subheader("Spending Breakdown")
         cat_df = (pd.DataFrame([{"Category": k, "CAD": v} for k, v in cat.items()])
-                  .sort_values("CAD", ascending=False))
+                    .sort_values("CAD", ascending=False))
         c_pie, c_tbl = st.columns([2, 1])
         with c_pie:
             fig_pie = px.pie(
@@ -525,7 +578,7 @@ def _tab_spending(result: OrchestratorResult) -> None:
         with c_tbl:
             st.dataframe(
                 cat_df.assign(CAD=cat_df["CAD"].map("${:,.2f}".format))
-                      .rename(columns={"CAD": "Amount (CAD)"}),
+                        .rename(columns={"CAD": "Amount (CAD)"}),
                 use_container_width=True, hide_index=True,
             )
 
@@ -586,18 +639,18 @@ def _tab_transactions(result: OrchestratorResult) -> None:
     fc1, fc2, fc3, fc4 = st.columns([2, 2, 1, 1])
     with fc1:
         search = st.text_input("Search", placeholder="e.g. Starbucks",
-                               label_visibility="collapsed")
+                                label_visibility="collapsed")
     with fc2:
         cat_f = st.selectbox("Category",
-                             ["All"] + sorted(df["Category"].unique().tolist()),
-                             label_visibility="collapsed")
+                                ["All"] + sorted(df["Category"].unique().tolist()),
+                                label_visibility="collapsed")
     with fc3:
         type_f = st.selectbox("Type", ["All", "Debit", "Credit"],
-                              label_visibility="collapsed")
+                                label_visibility="collapsed")
     with fc4:
         acct_f = st.selectbox("Account",
-                              ["All"] + sorted(df["Account"].unique().tolist()),
-                              label_visibility="collapsed")
+                                ["All"] + sorted(df["Account"].unique().tolist()),
+                                label_visibility="collapsed")
 
     mask = pd.Series(True, index=df.index)
     if search:  mask &= df["Description"].str.contains(search, case=False, na=False)
@@ -658,7 +711,7 @@ def _tab_employee(result: OrchestratorResult) -> None:
         "employee_notes":    st.session_state.employee_notes,
         "pipeline_steps": [
             {"name": s.name, "status": s.status,
-             "detail": s.detail, "elapsed_s": s.elapsed_seconds}
+                "detail": s.detail, "elapsed_s": s.elapsed_seconds}
             for s in result.steps
         ],
     }
@@ -703,9 +756,8 @@ def _welcome() -> None:
     st.caption("Credit scoring & product recommendations — internal use only")
     st.divider()
 
-    for col, icon, title, body in zip(
+    for col, title, body in zip(
         st.columns(3),
-        ["📁", "🏦", "🤖"],
         ["CSV Upload", "Plaid Sandbox", "LLM Underwriting"],
         [
             "Upload one or more transaction CSV files and assign account "
@@ -718,7 +770,6 @@ def _welcome() -> None:
     ):
         with col:
             with st.container(border=True):
-                st.write(icon)
                 st.subheader(title)
                 st.write(body)
 

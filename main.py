@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import sys
+import time
 from typing import List
 
 import streamlit as st
@@ -21,9 +22,11 @@ sys.path.insert(0, os.path.join(_PROJ_ROOT, "src"))
 
 from ui.app import (  # noqa: E402
     OrchestratorResult,
+    _error_result,
     _init_state,
+    _render_progress,
     _render_sidebar,
-    _run_pipeline,
+    _start_pipeline,
     _tab_employee,
     _tab_overview,
     _tab_products,
@@ -31,6 +34,8 @@ from ui.app import (  # noqa: E402
     _tab_transactions,
     _welcome,
 )
+
+_POLL_INTERVAL = 0.35  # seconds between progress refreshes
 
 
 # ---------------------------------------------------------------------------
@@ -40,13 +45,36 @@ from ui.app import (  # noqa: E402
 def main() -> None:
     _init_state()
 
-    run_config = _render_sidebar()
+    _render_sidebar()
 
-    if run_config is not None:
-        with st.spinner("Running underwriting pipeline…"):
-            _run_pipeline(run_config)
+    # ----- kick off the pipeline when the sidebar queues a config -----
+    pending = st.session_state.pending_config
+    if pending is not None and not st.session_state.running:
+        st.session_state.pending_config = None
+        _start_pipeline(pending)
         st.rerun()
 
+    # ----- pipeline is running — show live progress & poll -----
+    if st.session_state.running:
+        ctx = st.session_state.get("_pipeline_ctx") or {}
+
+        if ctx.get("done"):
+            # Pipeline finished — harvest results
+            st.session_state.running = False
+            if ctx.get("error"):
+                st.session_state.results = [_error_result(ctx["error"])]
+            elif ctx.get("results"):
+                st.session_state.results = ctx["results"]
+            st.session_state._pipeline_ctx = None
+            st.rerun()
+
+        # Still running — render progress then auto-refresh
+        st.subheader("Running analysis…")
+        _render_progress()
+        time.sleep(_POLL_INTERVAL)
+        st.rerun()
+
+    # ----- show results or welcome screen -----
     if st.session_state.results is not None:
         results: List[OrchestratorResult] = st.session_state.results
 
@@ -70,15 +98,6 @@ def main() -> None:
         with t3: _tab_products(result)
         with t4: _tab_transactions(result)
         with t5: _tab_employee(result)
-
-    elif st.session_state.running:
-        st.subheader("Running analysis…")
-        st.progress(st.session_state.progress_frac)
-        st.write(f"**{st.session_state.progress_label}** — "
-                 f"{st.session_state.progress_detail}")
-        for entry in st.session_state.progress_log:
-            st.write(f"✓ **{entry['label']}** — {entry['detail']} "
-                     f"`{entry['frac']*100:.0f}%`")
     else:
         _welcome()
 

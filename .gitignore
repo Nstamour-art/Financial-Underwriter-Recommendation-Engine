@@ -2,3 +2,4 @@
 *.pyc
 *.cpython-313.pyc
 *__pycache__
+src/ingest/stage_2/__pycache__/csv_converter.cpython-313.pyc
