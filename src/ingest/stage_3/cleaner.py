@@ -8,19 +8,22 @@ clean merchant names suitable for downstream LLM analysis:
   2. BERT   - NER-based ORG entity extraction via dslim/bert-base-NER (always runs)
   3. Qwen 3 - LLM normalisation via llama_cpp (runs when BERT confidence < threshold)
 
-All models are loaded lazily on first use.
+All models AND their underlying libraries are loaded lazily on first use so
+that ``import cleaner`` does not pull in torch / transformers / spacy at
+startup — keeping Streamlit page reloads fast.
 """
+
+from __future__ import annotations
 
 import re
 import os
 import sys
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, List, Optional, Tuple
 
-import spacy
-from huggingface_hub import hf_hub_download
-from transformers import pipeline as hf_pipeline
-from llama_cpp import Llama
+if TYPE_CHECKING:
+    import spacy
+    from llama_cpp import Llama
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -213,6 +216,8 @@ def download_qwen3_model(models_dir: Path = _MODELS_DIR) -> Path:
     The download uses ``huggingface_hub.hf_hub_download`` which shows a
     progress bar and resumes interrupted downloads automatically.
     """
+    from huggingface_hub import hf_hub_download
+
     models_dir.mkdir(parents=True, exist_ok=True)
     dest = models_dir / _GGUF_FILENAME
     if dest.exists():
@@ -341,6 +346,7 @@ class TransactionCleaner:
     def _load_spacy(self) -> None:
         if self._nlp is not None:
             return
+        import spacy
         try:
             self._nlp = spacy.load(self.SPACY_MODEL)
         except OSError:
@@ -351,9 +357,10 @@ class TransactionCleaner:
 
     def _load_ner(self) -> None:
         if self._ner is None:
+            from transformers import pipeline as hf_pipeline
+            from transformers import logging as hf_logging
             # The pooler weights (bert.pooler.*) are unused by BertForTokenClassification
             # and always appear in the load report as UNEXPECTED — suppress that noise.
-            from transformers import logging as hf_logging
             _prev_verbosity = hf_logging.get_verbosity()
             hf_logging.set_verbosity_error()
             self._ner = hf_pipeline(  # type: ignore[call-overload]
@@ -367,6 +374,7 @@ class TransactionCleaner:
     def _load_llm(self) -> None:
         if self._llm is not None:
             return
+        from llama_cpp import Llama
         if not self._llm_model_path:
             self._llm_model_path = str(download_qwen3_model())
         self._llm = Llama(

@@ -40,6 +40,7 @@ from custom_dataclasses import CSVFileInput
 from ingest.stage_1.plaid_api import PlaidAPI
 from orchestrator import Orchestrator, OrchestratorResult
 from process import PRODUCTS
+from process.audit import AuditLog
 from ui.styles import (
     CATEGORY_COLORS, CF_COLORS, PLOT_FONT, SIDEBAR_CSS,
     WS_BG, WS_TEXT, WS_TEXT_LIGHT, WS_BORDER,
@@ -86,13 +87,200 @@ def _init_state() -> None:
         "running":           False,
         "selected_idx":      0,
         "override_decision": None,
+        "override_reason":   "",
         "employee_notes":    "",
         "pending_config":    None,
         "_pipeline_ctx":     None,
         "csv_client_id":     str(uuid.uuid4()),
+        # CSV dialog state
+        "csv_client_name":   "",
+        "csv_file_config":   {},   # {filename: {"acct_type": str, "group": str}}
+        "csv_uploads":       [],   # list of UploadedFile objects
+        "csv_ready":         False,
     }.items():
         if k not in st.session_state:
             st.session_state[k] = v
+
+
+# ---------------------------------------------------------------------------
+# CSV Upload Dialog
+# ---------------------------------------------------------------------------
+
+_DEFAULT_GROUPS = [f"Account {chr(65 + i)}" for i in range(10)]  # A–J
+
+
+@st.dialog("Configure CSV Upload", width="large")
+def _csv_upload_dialog() -> None:
+    """
+    Modal dialog for CSV upload configuration.
+
+    Lets the user:
+      1.  Enter a client name (cosmetic — UUID stays internal).
+      2.  Upload one or more CSV statement files.
+      3.  For each file, pick an account type and an *account group*.
+          Files sharing the same group are merged (concatenated) before
+          processing — this is how multiple monthly statements for the
+          same account become a single 12-month history.
+    """
+    st.caption(
+        "Upload transaction CSVs and organise them into account groups. "
+        "Files in the **same group** are merged together — use this to "
+        "combine monthly statements for one account."
+    )
+
+    client_name = st.text_input(
+        "Client name",
+        value=st.session_state.csv_client_name,
+        placeholder="e.g. Jane Smith",
+    ) or ""
+
+    st.divider()
+
+    uploaded = st.file_uploader(
+        "Transaction files",
+        type=["csv"],
+        accept_multiple_files=True,
+        key="dialog_csv_uploader",
+    )
+
+    if uploaded:
+        st.divider()
+        st.markdown("##### File configuration")
+        st.caption(
+            "Assign each file an **account type**. Files with the same type "
+            "are automatically grouped into the same account (merged). "
+            "Use the **group** column to override — e.g. if you have two "
+            "separate chequing accounts."
+        )
+
+        # Build existing config or defaults for new files
+        existing: dict = dict(st.session_state.csv_file_config)
+        for f in uploaded:
+            if f.name not in existing:
+                existing[f.name] = {"acct_type": "Auto-detect", "group": ""}
+
+        # --- First pass: collect account types so we can auto-assign groups ---
+        acct_types_chosen: Dict[str, str] = {}
+        for idx, f in enumerate(uploaded):
+            prev = existing.get(f.name, {})
+            acct_types_chosen[f.name] = st.session_state.get(
+                f"dlg_acct_{idx}", prev.get("acct_type", "Auto-detect")
+            )
+
+        # Auto-assign groups: each distinct account type gets its own group letter.
+        # Files with "Auto-detect" each get their own group since we can't know
+        # whether they belong together.
+        _type_to_group: Dict[str, str] = {}
+        _auto_counter = 0
+        auto_groups: Dict[str, str] = {}
+        for fname in [f.name for f in uploaded]:
+            atype = acct_types_chosen[fname]
+            if atype == "Auto-detect":
+                # Each auto-detect file gets its own group
+                auto_groups[fname] = _DEFAULT_GROUPS[_auto_counter % len(_DEFAULT_GROUPS)]
+                _auto_counter += 1
+            else:
+                if atype not in _type_to_group:
+                    _type_to_group[atype] = _DEFAULT_GROUPS[
+                        (_auto_counter + len(_type_to_group)) % len(_DEFAULT_GROUPS)
+                    ]
+                auto_groups[fname] = _type_to_group[atype]
+        # Deduplicate: ensure type-based groups don't collide with auto-detect ones
+        # by assigning them sequentially from the pool
+        used_indices: set[int] = set()
+        _type_to_group_final: Dict[str, str] = {}
+        next_idx = 0
+        for fname in [f.name for f in uploaded]:
+            atype = acct_types_chosen[fname]
+            if atype == "Auto-detect":
+                while next_idx in used_indices:
+                    next_idx += 1
+                auto_groups[fname] = _DEFAULT_GROUPS[next_idx % len(_DEFAULT_GROUPS)]
+                used_indices.add(next_idx)
+                next_idx += 1
+            else:
+                if atype not in _type_to_group_final:
+                    while next_idx in used_indices:
+                        next_idx += 1
+                    _type_to_group_final[atype] = _DEFAULT_GROUPS[next_idx % len(_DEFAULT_GROUPS)]
+                    used_indices.add(next_idx)
+                    next_idx += 1
+                auto_groups[fname] = _type_to_group_final[atype]
+
+        # --- Render config rows ---
+        file_config: Dict[str, dict] = {}
+        for idx, f in enumerate(uploaded):
+            prev = existing.get(f.name, {})
+            cols = st.columns([3, 2, 2])
+            with cols[0]:
+                st.text(f.name)
+            with cols[1]:
+                acct_type = st.selectbox(
+                    "Type",
+                    list(_ACCOUNT_TYPES.keys()),
+                    index=list(_ACCOUNT_TYPES.keys()).index(
+                        prev.get("acct_type", "Auto-detect")),
+                    key=f"dlg_acct_{idx}",
+                    label_visibility="collapsed",
+                )
+            with cols[2]:
+                # Use the auto-assigned group as default, but let user override
+                default_group = auto_groups.get(f.name, _DEFAULT_GROUPS[0])
+                group = st.selectbox(
+                    "Group",
+                    _DEFAULT_GROUPS,
+                    index=_DEFAULT_GROUPS.index(default_group)
+                        if default_group in _DEFAULT_GROUPS else 0,
+                    key=f"dlg_group_{idx}",
+                    label_visibility="collapsed",
+                )
+            file_config[f.name] = {"acct_type": acct_type, "group": group}
+
+        # Validate: warn if different account types share a group
+        groups_check: Dict[str, set[str]] = {}
+        for fname, cfg in file_config.items():
+            groups_check.setdefault(cfg["group"], set()).add(cfg["acct_type"])
+        for g, types in groups_check.items():
+            real_types = types - {"Auto-detect"}
+            if len(real_types) > 1:
+                st.warning(
+                    f"**{g}** has mixed account types ({', '.join(sorted(real_types))}). "
+                    f"Files in the same group should be statements for the same account.",
+                    icon="⚠️",
+                )
+
+        # Show merge preview
+        groups: Dict[str, List[str]] = {}
+        for fname, cfg in file_config.items():
+            groups.setdefault(cfg["group"], []).append(fname)
+        merged_groups = {g: fnames for g, fnames in groups.items() if len(fnames) > 1}
+        if merged_groups:
+            st.divider()
+            st.markdown("##### Merge preview")
+            for g, fnames in merged_groups.items():
+                st.info(
+                    f"**{g}** — {len(fnames)} files will be merged: "
+                    + ", ".join(f"`{n}`" for n in fnames),
+                    icon="🔗",
+                )
+    else:
+        file_config = {}
+
+    st.divider()
+
+    c_cancel, c_confirm = st.columns(2)
+    with c_cancel:
+        if st.button("Cancel", width='stretch'):
+            st.rerun()
+    with c_confirm:
+        confirm_disabled = not uploaded or not client_name.strip()
+        if st.button("Confirm", type="primary", width='stretch',
+                     disabled=confirm_disabled):
+            st.session_state.csv_client_name = client_name.strip()
+            st.session_state.csv_uploads     = uploaded
+            st.session_state.csv_file_config = file_config
+            st.session_state.csv_ready       = True
+            st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -118,24 +306,25 @@ def _render_sidebar() -> None:
         config: dict = {"source": source}
 
         if source == "CSV Upload":
-            config["client_id"] = st.session_state.csv_client_id
+            config["client_id"]   = st.session_state.csv_client_id
+            config["client_name"] = st.session_state.csv_client_name
+            config["uploaded"]    = st.session_state.csv_uploads
+            config["file_config"] = st.session_state.csv_file_config
 
-            st.text(body="Transaction files")
-            uploaded = st.file_uploader(
-                "csv", type=["csv"], accept_multiple_files=True,
-                label_visibility="collapsed",
-            )
-            config["uploaded"] = uploaded
+            if st.button("Configure CSV Upload", width='stretch'):
+                _csv_upload_dialog()
 
-            if uploaded:
-                st.text(body="Account types")
-                acct_types: Dict[str, str] = {}
-                for f in uploaded:
-                    acct_types[f.name] = st.selectbox(
-                        f.name, list(_ACCOUNT_TYPES.keys()),
-                        index=0, key=f"acct_{f.name}",
-                    )
-                config["acct_types"] = acct_types
+            # Show summary of configured files
+            if st.session_state.csv_ready and st.session_state.csv_uploads:
+                name = st.session_state.csv_client_name or "Unnamed"
+                n_files = len(st.session_state.csv_uploads)
+                groups = set(
+                    v["group"] for v in st.session_state.csv_file_config.values()
+                )
+                st.success(
+                    f"**{name}** — {n_files} file(s) in {len(groups)} account group(s)",
+                    icon="📁",
+                )
         else:
             sandbox_users = PlaidAPI.list_sandbox_users()  # [(label, username), ...]
             all_labels = [label for label, _ in sandbox_users]
@@ -176,8 +365,7 @@ def _render_sidebar() -> None:
 
         run_disabled = (
             (source == "CSV Upload"
-                and (not config.get("uploaded")
-                    or not config.get("client_id", "").strip()))
+                and not st.session_state.csv_ready)
             or (source == "Plaid Sandbox"
                 and not config.get("selected_users"))
         )
@@ -191,6 +379,11 @@ def _render_sidebar() -> None:
                 st.session_state.results           = None
                 st.session_state.override_decision = None
                 st.session_state.employee_notes    = ""
+                st.session_state.csv_client_name   = ""
+                st.session_state.csv_file_config   = {}
+                st.session_state.csv_uploads       = []
+                st.session_state.csv_ready         = False
+                st.session_state.csv_client_id     = str(uuid.uuid4())
                 st.rerun()
 
 
@@ -199,17 +392,69 @@ def _render_sidebar() -> None:
 # ---------------------------------------------------------------------------
 
 def _build_csv_data(config: dict) -> Dict[str, List[CSVFileInput]]:
-    client_id  = config["client_id"].strip()
-    acct_types = config.get("acct_types", {})
-    files = [
-        CSVFileInput(
-            filepath=f.name,
-            df=pd.read_csv(io.StringIO(f.getvalue().decode("utf-8-sig"))),
-            account_type=_ACCOUNT_TYPES[acct_types.get(f.name, "Auto-detect")],
+    """
+    Build the ``{client_id: [CSVFileInput, ...]}`` dict consumed by the
+    orchestrator, **merging files that share an account group**.
+
+    Files assigned to the same group have their DataFrames concatenated
+    (row-wise) so multiple monthly statements become one continuous history.
+    """
+    client_id   = config["client_id"].strip()
+    file_config = config.get("file_config", {})
+    uploaded    = config.get("uploaded", [])
+
+    # Index uploaded files by name for quick lookup
+    file_by_name = {f.name: f for f in uploaded}
+
+    # Group filenames by account group
+    groups: Dict[str, List[str]] = {}
+    for fname, cfg in file_config.items():
+        groups.setdefault(cfg["group"], []).append(fname)
+
+    # Build one CSVFileInput per group (merging DataFrames when > 1 file)
+    csv_inputs: List[CSVFileInput] = []
+    for group_label, fnames in groups.items():
+        dfs: List[pd.DataFrame] = []
+        acct_type_key = "Auto-detect"
+        representative_name = fnames[0]
+
+        for fname in fnames:
+            uf = file_by_name.get(fname)
+            if uf is None:
+                continue
+            dfs.append(pd.read_csv(
+                io.StringIO(uf.getvalue().decode("utf-8-sig"))
+            ))
+            # Use the account type from file_config (last one wins if mixed,
+            # but they should all be the same within a group)
+            acct_type_key = file_config[fname].get("acct_type", "Auto-detect")
+
+        if not dfs:
+            continue
+
+        merged_df = pd.concat(dfs, ignore_index=True) if len(dfs) > 1 else dfs[0]
+
+        # Use the group label as a friendlier filepath stem when merging
+        display_name = (
+            group_label if len(fnames) > 1 else representative_name
         )
-        for f in config["uploaded"]
-    ]
-    return {client_id: files}
+
+        csv_inputs.append(CSVFileInput(
+            filepath=display_name,
+            df=merged_df,
+            account_type=_ACCOUNT_TYPES[acct_type_key],
+        ))
+
+    # Fall back: if file_config is empty (shouldn't happen), treat each file individually
+    if not csv_inputs:
+        for f in uploaded:
+            csv_inputs.append(CSVFileInput(
+                filepath=f.name,
+                df=pd.read_csv(io.StringIO(f.getvalue().decode("utf-8-sig"))),
+                account_type=None,
+            ))
+
+    return {client_id: csv_inputs}
 
 
 def _check_csv_date_coverage(csv_data: Dict[str, List[CSVFileInput]]) -> Optional[str]:
@@ -301,7 +546,8 @@ def _start_pipeline(config: dict) -> None:
             if config["source"] == "CSV Upload" and csv_data is not None:
                 ctx["results"] = orchestrator.run_from_csv(
                     csv_data, on_progress=on_progress,
-                    on_sub_progress=on_sub_progress)
+                    on_sub_progress=on_sub_progress,
+                    client_name=config.get("client_name"))
             else:
                 ctx["results"] = orchestrator.run_from_plaid_sandbox(
                     start_date=config["start_date"],
@@ -462,7 +708,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
             font={"family": "The Future, Helvetica Neue, sans-serif"},
             paper_bgcolor="rgba(0,0,0,0)",
         )
-        st.plotly_chart(fig, use_container_width=True,
+        st.plotly_chart(fig, width='stretch',
                         config={"displayModeBar": False})
         st.caption("Underwriting Score")
 
@@ -562,7 +808,7 @@ def _tab_spending(result: OrchestratorResult) -> None:
         plot_bgcolor=WS_BG, paper_bgcolor=WS_BG,
         margin=dict(t=10, b=30), height=280,
     )
-    st.plotly_chart(fig_cf, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(fig_cf, width='stretch', config={"displayModeBar": False})
 
     if sp:
         st.subheader("Monthly Spending by Category")
@@ -606,13 +852,13 @@ def _tab_spending(result: OrchestratorResult) -> None:
                 plot_bgcolor=WS_BG, paper_bgcolor=WS_BG,
                 margin=dict(t=5, b=5, l=5, r=5), height=320,
             )
-            st.plotly_chart(fig_pie, use_container_width=True,
+            st.plotly_chart(fig_pie, width='stretch',
                             config={"displayModeBar": False})
         with c_tbl:
             st.dataframe(
                 cat_df.assign(CAD=cat_df["CAD"].map("${:,.2f}".format))
                         .rename(columns={"CAD": "Amount (CAD)"}),
-                use_container_width=True, hide_index=True,
+                width='stretch', hide_index=True,
             )
 
 
@@ -620,30 +866,53 @@ def _tab_spending(result: OrchestratorResult) -> None:
 # Tab: Products
 # ---------------------------------------------------------------------------
 
+def _product_card(product, *, highlighted: bool = False) -> str:
+    """Return an HTML card string for a single product."""
+    bg = ("background:#e6f7f4; border:1px solid #00C8A0;"
+          if highlighted else "background:#ffffff; border:1px solid #e4e2e1;")
+    income = (f'<p style="margin:8px 0 0 0;font-size:12px;color:#686664;">'
+              f'Min income: ${product.min_annual_income:,}/yr</p>'
+              if product.min_annual_income else "")
+    return f"""
+    <div style="{bg} border-radius:10px; padding:16px; margin:8px 0;
+                 height:300px; box-sizing:border-box; overflow:hidden;">
+        <span style="background:#e4e2e1;color:#686664;padding:5px 10px;
+                     border-radius:10px;font-size:12px;">
+            {html_lib.escape(product.type)}
+        </span>
+        <h4 style="margin:10px 0 6px 0;font-size:16px;">{html_lib.escape(product.name)}</h4>
+        <p style="margin:0;font-size:13px;color:#32302f;">{html_lib.escape(product.description)}</p>
+        {income}
+    </div>"""
+
+
+def _render_product_grid(products, *, highlighted: bool = False) -> None:
+    """Lay out a list of products in a 3-column grid."""
+    cols = st.columns(3, gap="small")
+    for i, product in enumerate(products):
+        with cols[i % 3]:
+            st.markdown(_product_card(product, highlighted=highlighted),
+                        unsafe_allow_html=True)
+
+
 def _tab_products(result: OrchestratorResult) -> None:
     uw  = result.underwriting or {}
     rec = {p.lower() for p in uw.get("recommended_products", [])}
 
-    st.caption("Green cards were recommended by the underwriting model.")
+    recommended = [p for p in PRODUCTS.products if p.name.lower() in rec]
+    others      = [p for p in PRODUCTS.products if p.name.lower() not in rec]
 
-    cols = st.columns(3, gap="small")
-    for i, product in enumerate(PRODUCTS.products):
-        is_rec = product.name.lower() in rec
-        bg     = "background:#e6f7f4; border:1px solid #00C8A0;" if is_rec else "background:#ffffff; border:1px solid #e4e2e1;"
-        income = (f'<p style="margin:8px 0 0 0;font-size:12px;color:#686664;">'
-                  f'Min income: ${product.min_annual_income:,}/yr</p>'
-                  if product.min_annual_income else "")
-        card = f"""
-        <div style="{bg} border-radius:10px; padding:16px; margin:8px 0; height:300px; box-sizing:border-box; overflow:hidden;">
-            <span style="background:#e4e2e1;color:#686664;padding:5px 10px;border-radius:10px;font-size:12px;">
-                {html_lib.escape(product.type)}
-            </span>
-            <h4 style="margin:10px 0 6px 0;font-size:16px;">{html_lib.escape(product.name)}</h4>
-            <p style="margin:0;font-size:13px;color:#32302f;">{html_lib.escape(product.description)}</p>
-            {income}
-        </div>"""
-        with cols[i % 3]:
-            st.markdown(card, unsafe_allow_html=True)
+    # --- Recommended section ---
+    st.markdown("#### Recommended by LLM")
+    if recommended:
+        _render_product_grid(recommended, highlighted=True)
+    else:
+        st.info("No products recommended by LLM.", icon="ℹ️")
+
+    # --- Remaining products ---
+    if others:
+        st.markdown("#### Other Products")
+        _render_product_grid(others, highlighted=False)
 
 
 # ---------------------------------------------------------------------------
@@ -701,31 +970,117 @@ def _tab_transactions(result: OrchestratorResult) -> None:
     filtered["Amount"] = filtered["Amount"].map("${:,.2f}".format)
 
     st.caption(f"{len(filtered):,} of {len(df):,} transactions")
-    st.dataframe(filtered, use_container_width=True, hide_index=True, height=470)
+    st.dataframe(filtered, width='stretch', hide_index=True, height=470)
 
 
 # ---------------------------------------------------------------------------
-# Tab: Employee Tools
+# Tab: Decision Review  (replaces legacy Employee Tools)
 # ---------------------------------------------------------------------------
 
-def _tab_employee(result: OrchestratorResult) -> None:
+def _tab_review(result: OrchestratorResult) -> None:
     uw = result.underwriting or {}
+    uid = result.user.user_id if result.user else "result"
 
+    # ── Section A: Human Decision Boundary ──────────────────────────────
+    st.subheader("Human Decision Point")
+    st.markdown(
+        "**This system recommends, but it does not make final approval.** "
+        "Final credit decisions must remain with a qualified underwriter because:"
+    )
+    st.markdown(
+        "1. **Regulatory accountability** -  Human oversight of model decisions is required on a regular review and auditing basis.\n"
+        "2. **Context the model cannot see** - Life events, verbal disclosures, and relationship history are invisible to the pipeline.\n"
+        "3. **Fairness auditing** - A human reviewer can catch proxy discrimination the model may encode."
+    )
+
+    confidence     = float(uw.get("confidence", 0.0))
+    decision       = uw.get("decision", "unknown")
+
+    if confidence < 0.6 or decision == "conditional":
+        st.error(
+            f"Escalation required — Combined confidence: {confidence:.0%}, "
+            f"Decision: {decision.title()}.  "
+            "This application should be reviewed by a senior underwriter before any commitment."
+        )
+    elif confidence < 0.8:
+        st.warning(
+            f"Borderline confidence ({confidence:.0%}).  "
+            "The system's recommendation should be validated against the applicant's full profile."
+        )
+    else:
+        st.success(
+            f"High confidence ({confidence:.0%}).  "
+            "System recommendation can be accepted with standard spot-check procedures."
+        )
+
+    st.divider()
+
+    # ── Section B: Confidence Breakdown ─────────────────────────────────
+    st.subheader("Confidence Breakdown")
+
+    c_llm, c_heur, c_comb = st.columns(3)
+    c_llm.metric("LLM self-reported",  f"{uw.get('confidence_llm', 0):.0%}")
+    c_heur.metric("Heuristic (data)",  f"{uw.get('confidence_heuristic', 0):.0%}")
+    c_comb.metric("Combined",          f"{confidence:.0%}")
+
+    signals: dict = uw.get("data_signals", {})
+    if signals:
+        st.caption("Data completeness signals")
+        _SIGNAL_LABELS = {
+            "multiple_accounts":  "2+ accounts linked",
+            "has_transactions":   "Transaction data present",
+            "sufficient_history": ">30 transactions",
+            "12mo_coverage":      "12-month date coverage",
+            "income_detected":    "Income stream detected",
+            "valid_risk_level":   "Valid risk classification",
+            "products_recommended": "Products recommended",
+            "score_in_range":     "Score within 300–900",
+        }
+        cols = st.columns(4)
+        for i, (key, met) in enumerate(signals.items()):
+            label = _SIGNAL_LABELS.get(key, key)
+            icon  = "✓" if met else "✗"
+            with cols[i % 4]:
+                if met:
+                    st.badge(f"{icon} {label}", color="green")
+                else:
+                    st.badge(f"{icon} {label}", color="red")
+
+    st.divider()
+
+    # ── Section C: Override & Audit ─────────────────────────────────────
     st.subheader("Decision Override")
     st.caption(
-        "Record a manual override. Stored in this session and included "
-        "in the exported JSON report."
+        "Record a manual override. The original model decision and your "
+        "override are both preserved in the audit trail."
     )
     current = uw.get("decision", "—")
     choice  = st.selectbox(
         "Decision",
         [f"Keep model decision ({current})", "approved", "conditional", "rejected"],
+        key="review_override_select",
     )
     if not choice.startswith("Keep"):
         st.session_state.override_decision = choice
+        reason = st.text_area(
+            "Override rationale (required)",
+            value=st.session_state.override_reason,
+            placeholder="Explain why the model decision is being changed…",
+            height=80,
+            key="review_override_reason",
+        )
+        st.session_state.override_reason = reason or ""
         st.warning(f"Decision overridden to **{choice}**")
+
+        # Persist override to audit DB
+        if result.audit_id and reason:
+            try:
+                AuditLog().update_override(result.audit_id, choice, reason)
+            except Exception:
+                pass
     else:
         st.session_state.override_decision = None
+        st.session_state.override_reason   = ""
 
     st.divider()
 
@@ -733,21 +1088,54 @@ def _tab_employee(result: OrchestratorResult) -> None:
     notes = st.text_area(
         "notes",
         value=st.session_state.employee_notes,
-        placeholder="Underwriting notes, override rationale, client context…",
-        height=140,
+        placeholder="Underwriting notes, client context…",
+        height=120,
         label_visibility="collapsed",
+        key="review_notes",
     )
     st.session_state.employee_notes = notes
 
     st.divider()
 
+    # ── Audit history ───────────────────────────────────────────────────
+    st.subheader("Audit History")
+    try:
+        records = AuditLog().get_for_user(uid)
+        if records:
+            rows = [
+                {
+                    "Timestamp":  r.timestamp[:19].replace("T", " "),
+                    "Score":      r.score,
+                    "Decision":   (r.human_override or r.decision or "—").title(),
+                    "Confidence": f"{(r.confidence or 0):.0%}",
+                    "Override":   r.human_override.title() if r.human_override else "—",
+                    "Reason":     r.override_reason or "—",
+                }
+                for r in records
+            ]
+            st.dataframe(pd.DataFrame(rows), width='stretch', hide_index=True)
+        else:
+            st.caption("No prior audit records for this client.")
+    except Exception:
+        st.caption("Audit log unavailable.")
+
+    st.divider()
+
+    # ── Export ──────────────────────────────────────────────────────────
     st.subheader("Export")
-    uid    = result.user.user_id if result.user else "result"
     export = {
-        "user_id":           uid,
-        "underwriting":      uw,
-        "override_decision": st.session_state.override_decision,
-        "employee_notes":    st.session_state.employee_notes,
+        "user_id":              uid,
+        "underwriting":         uw,
+        "override_decision":    st.session_state.override_decision,
+        "override_reason":      st.session_state.override_reason,
+        "employee_notes":       st.session_state.employee_notes,
+        "audit_id":             result.audit_id,
+        "confidence": {
+            "llm":       uw.get("confidence_llm"),
+            "heuristic": uw.get("confidence_heuristic"),
+            "combined":  uw.get("confidence"),
+        },
+        "data_signals":         signals,
         "pipeline_steps": [
             {"name": s.name, "status": s.status,
                 "detail": s.detail, "elapsed_s": s.elapsed_seconds}

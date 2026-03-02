@@ -2,16 +2,7 @@ import json
 import os
 import time
 from datetime import date, timedelta
-import plaid
 from dotenv import load_dotenv
-from plaid.api import plaid_api
-from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
-from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
-from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
-from plaid.model.products import Products
-from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
-from plaid.model.transactions_get_request import TransactionsGetRequest
-from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
 
 load_dotenv()
 
@@ -58,7 +49,10 @@ class PlaidAPI:
         return users
 
 
-    def _build_client(self) -> plaid_api.PlaidApi:
+    def _build_client(self):
+        import plaid
+        from plaid.api import plaid_api
+
         client_id = os.environ["PLAID_CLIENT_ID"]
         secret = os.environ["PLAID_SECRET"]
         env_name = os.getenv("PLAID_ENV", "sandbox").lower()
@@ -79,12 +73,16 @@ class PlaidAPI:
 
     def create_sandbox_access_token(
         self,
-        client: plaid_api.PlaidApi,
+        client,
         institution_id: str,
         override_username: str = "user_good",
         override_password: str = "pass_good",
     ) -> str:
         """Create a sandbox public token and exchange it for an access token."""
+        from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+        from plaid.model.products import Products
+        from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
+
         pt_request = SandboxPublicTokenCreateRequest(
             institution_id=institution_id,
             initial_products=[Products("transactions"), Products("investments")],
@@ -103,7 +101,7 @@ class PlaidAPI:
 
     def get_item_data(
         self,
-        client: plaid_api.PlaidApi,
+        client,
         access_token: str,
         start_date: date,
         end_date: date,
@@ -124,6 +122,12 @@ class PlaidAPI:
                 }
             }
         """
+        import plaid
+        from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
+        from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
+        from plaid.model.transactions_get_request import TransactionsGetRequest
+        from plaid.model.transactions_get_request_options import TransactionsGetRequestOptions
+
         all_transactions: list[dict] = []
         accounts: list[dict] = []
         offset = 0
@@ -237,6 +241,8 @@ class PlaidAPI:
             end_date = date.today()
         if start_date is None:
             start_date = end_date - timedelta(days=90)
+
+        import plaid
 
         client = self._build_client()
         results: dict[str, dict] = {}

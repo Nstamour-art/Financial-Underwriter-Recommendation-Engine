@@ -27,9 +27,9 @@ from ui.app import (  # noqa: E402
     _render_progress,
     _render_sidebar,
     _start_pipeline,
-    _tab_employee,
     _tab_overview,
     _tab_products,
+    _tab_review,
     _tab_spending,
     _tab_transactions,
     _welcome,
@@ -95,13 +95,13 @@ def main() -> None:
         result = results[st.session_state.selected_idx]
 
         t1, t2, t3, t4, t5 = st.tabs(
-            ["Overview", "Spending", "Products", "Transactions", "Employee Tools"]
+            ["Overview", "Spending", "Products", "Transactions", "Decision Review"]
         )
         with t1: _tab_overview(result)
         with t2: _tab_spending(result)
         with t3: _tab_products(result)
         with t4: _tab_transactions(result)
-        with t5: _tab_employee(result)
+        with t5: _tab_review(result)
     else:
         _welcome()
 

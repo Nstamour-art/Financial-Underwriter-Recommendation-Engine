@@ -1,7 +1,10 @@
-from typing import Dict, List, Optional
+from __future__ import annotations
 
-import numpy as np
-from sentence_transformers import SentenceTransformer
+from typing import TYPE_CHECKING, Dict, List, Optional
+
+if TYPE_CHECKING:
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
 
 
 class ColumnIdentifier:
@@ -70,6 +73,8 @@ class ColumnIdentifier:
     def _load(cls) -> None:
         if cls._model is not None:
             return
+        from sentence_transformers import SentenceTransformer
+
         cls._model       = SentenceTransformer(cls.MODEL_NAME)
         cls._anchor_keys = list(cls.ANCHORS.keys())
 
@@ -95,6 +100,7 @@ class ColumnIdentifier:
         Each physical column is assigned to at most one role (greedy, best-first).
         """
         cls._load()
+        import numpy as np
         assert cls._model is not None
         assert cls._anchor_vecs is not None
         assert cls._anchor_keys is not None

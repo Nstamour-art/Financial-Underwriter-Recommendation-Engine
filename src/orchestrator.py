@@ -39,7 +39,7 @@ import sys
 import time
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from typing import Callable, Dict, List, Literal, Optional
 
 # Add src/ to the path so all sibling packages resolve as absolute imports
@@ -55,6 +55,12 @@ from ingest import (
     TransactionCategorizer,
 )
 from process import UnderwritingOrchestrator, PRODUCTS
+from process.audit import (
+    AuditLog,
+    AuditRecord,
+    compute_heuristic_confidence,
+    hash_user_data,
+)
     
 
 # ---------------------------------------------------------------------------
@@ -116,6 +122,7 @@ class OrchestratorResult:
     steps:                   List[StepResult]
     total_elapsed_seconds:   float
     error:                   Optional[str] = None
+    audit_id:                Optional[int] = None
 
     # ------------------------------------------------------------------
     # Chart-data helpers for Streamlit
@@ -270,6 +277,7 @@ class Orchestrator:
         csv_data: Dict[str, List[CSVFileInput]],
         on_progress: Optional[Callable[[str, str, float], None]] = None,
         on_sub_progress: Optional[Callable[[int, int], None]] = None,
+        client_name: Optional[str] = None,
     ) -> List[OrchestratorResult]:
         """
         Run the full pipeline from CSV file inputs.
@@ -284,6 +292,8 @@ class Orchestrator:
             on_progress(step_name, detail, fraction) called after each stage.
         on_sub_progress : callable(done, total) | None
             Called per transaction during cleaning and categorization.
+        client_name : str, optional
+            Human-readable client name for display.  Applied to User.name.
 
         Returns
         -------
@@ -291,6 +301,9 @@ class Orchestrator:
         """
         def _load(_on_progress):
             users = CSVDataConverter.convert(csv_data)
+            if client_name:
+                for u in users:
+                    u.name = client_name
             _emit(_on_progress, "load", f"Loaded {len(users)} user(s) from CSV")
             return users
 
@@ -462,6 +475,7 @@ class Orchestrator:
 
         # --- Process: underwrite each user ---
         underwriter = self._get_underwriter()
+        audit_log = AuditLog()
 
         for user in users:
             user_steps = [load_step, clean_step, cat_step]
@@ -470,25 +484,69 @@ class Orchestrator:
                     f"Analysing {user.user_id}…", _STEP_FRACTIONS["categorize"])
             try:
                 uw_result = underwriter.run(user, api_provider=self._api_provider)
+
+                # --- Confidence calibration ---
+                confidence_llm = float(uw_result.get("confidence", 0.0))
+                confidence_heuristic, data_signals = compute_heuristic_confidence(user, uw_result)
+                confidence_combined = round(
+                    0.6 * confidence_llm + 0.4 * confidence_heuristic, 3
+                )
+                uw_result["confidence_llm"]       = confidence_llm
+                uw_result["confidence_heuristic"]  = confidence_heuristic
+                uw_result["confidence"]            = confidence_combined
+                uw_result["data_signals"]          = data_signals
+
                 uw_elapsed = time.monotonic() - t0
                 uw_step = StepResult(
                     name="underwrite", label=_STEP_LABELS["underwrite"],
                     status="completed",
                     detail=(
                         f"Decision: {uw_result.get('decision', '?')}  "
-                        f"Score: {uw_result.get('score', '?')}"
+                        f"Score: {uw_result.get('score', '?')}  "
+                        f"Confidence: {confidence_combined:.0%}"
                     ),
                     elapsed_seconds=uw_elapsed,
                 )
                 _emit(on_progress, "done", "Pipeline complete", _STEP_FRACTIONS["done"])
             except Exception as exc:
                 uw_result = None
+                data_signals = {}
+                confidence_llm = 0.0
+                confidence_heuristic = 0.0
+                confidence_combined = 0.0
                 uw_step = StepResult(
                     name="underwrite", label=_STEP_LABELS["underwrite"],
                     status="failed", detail=str(exc),
                     elapsed_seconds=time.monotonic() - t0,
                 )
                 _emit(on_progress, "underwrite", f"Failed: {exc}", _STEP_FRACTIONS["underwrite"])
+
+            # --- Audit trail ---
+            audit_id: Optional[int] = None
+            try:
+                rec = AuditRecord(
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    session_id="pipeline",
+                    user_id=user.user_id,
+                    input_hash=hash_user_data(user),
+                    score=uw_result.get("score") if uw_result else None,
+                    decision=uw_result.get("decision") if uw_result else None,
+                    confidence_llm=confidence_llm,
+                    confidence_heuristic=confidence_heuristic,
+                    confidence=confidence_combined,
+                    recommended_products=(
+                        uw_result.get("recommended_products", []) if uw_result else []
+                    ),
+                    data_signals=data_signals,
+                    model_versions={
+                        "provider": uw_result.get("provider", "unknown") if uw_result else "none",
+                        "cleaner_ner": "dslim/bert-base-NER",
+                        "categorizer": "all-MiniLM-L6-v2",
+                    },
+                )
+                audit_id = audit_log.record(rec)
+            except Exception:
+                pass  # audit failure must never block the pipeline
 
             user_steps.append(uw_step)
             results.append(OrchestratorResult(
@@ -497,6 +555,7 @@ class Orchestrator:
                 steps=user_steps,
                 total_elapsed_seconds=time.monotonic() - wall_start,
                 error=uw_step.detail if uw_step.status == "failed" else None,
+                audit_id=audit_id,
             ))
 
         return results

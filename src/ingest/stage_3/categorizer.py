@@ -19,14 +19,17 @@ Usage:
     categorizer.categorize_users(users)  # modifies in-place, run Cleaner first
 """
 
+from __future__ import annotations
+
 import os
 import re
 import sys
 from decimal import Decimal
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple
 
-import numpy as np
-from sentence_transformers import SentenceTransformer
+if TYPE_CHECKING:
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
@@ -256,6 +259,9 @@ class TransactionCategorizer:
     def _load(self) -> None:
         if self._model is not None:
             return
+        import numpy as np
+        from sentence_transformers import SentenceTransformer
+
         self._model = SentenceTransformer(self._model_name)
         self._label_vecs = self._model.encode(
             _ALL_SUB_LABELS,
@@ -290,6 +296,7 @@ class TransactionCategorizer:
             return [known[0]], known[1]
 
         self._load()
+        import numpy as np
         assert self._model is not None
         assert self._label_vecs is not None
         assert self._income_idx is not None
@@ -341,6 +348,7 @@ class TransactionCategorizer:
             Called with a human-readable status string before the batch inference.
         """
         self._load()
+        import numpy as np
 
         # --- Collect all transactions, resolving known-category ones immediately ---
         all_txn_count = sum(

@@ -3,3 +3,5 @@
 *.cpython-313.pyc
 *__pycache__
 src/ingest/stage_2/__pycache__/csv_converter.cpython-313.pyc
+src/process/prompts/__pycache__/prompt.cpython-313.pyc
+audit_logs/audit.db
