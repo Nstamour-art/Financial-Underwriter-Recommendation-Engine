@@ -6,6 +6,8 @@ import plaid
 from dotenv import load_dotenv
 from plaid.api import plaid_api
 from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.investments_transactions_get_request import InvestmentsTransactionsGetRequest
+from plaid.model.investments_transactions_get_request_options import InvestmentsTransactionsGetRequestOptions
 from plaid.model.products import Products
 from plaid.model.sandbox_public_token_create_request import SandboxPublicTokenCreateRequest
 from plaid.model.transactions_get_request import TransactionsGetRequest
@@ -85,7 +87,7 @@ class PlaidAPI:
         """Create a sandbox public token and exchange it for an access token."""
         pt_request = SandboxPublicTokenCreateRequest(
             institution_id=institution_id,
-            initial_products=[Products("transactions")],
+            initial_products=[Products("transactions"), Products("investments")],
             options={
                 "override_username": override_username,
                 "override_password": override_password,
@@ -171,6 +173,36 @@ class PlaidAPI:
         for txn in all_transactions:
             aid = txn["account_id"]
             transactions_by_account.setdefault(aid, []).append(txn)
+
+        # Fetch investment transactions (separate Plaid endpoint).
+        # Silently skip if the item doesn't have the investments product.
+        try:
+            inv_all: list[dict] = []
+            inv_offset = 0
+            while True:
+                inv_request = InvestmentsTransactionsGetRequest(
+                    access_token=access_token,
+                    start_date=start_date,
+                    end_date=end_date,
+                    options=InvestmentsTransactionsGetRequestOptions(
+                        count=500,
+                        offset=inv_offset,
+                    ),
+                )
+                inv_response = client.investments_transactions_get(inv_request)
+                batch = [t.to_dict() for t in inv_response["investment_transactions"]]
+                for t in batch:
+                    t["_source"] = "investment"
+                inv_all.extend(batch)
+                if len(inv_all) >= inv_response["total_investment_transactions"]:
+                    break
+                inv_offset = len(inv_all)
+
+            for txn in inv_all:
+                aid = txn["account_id"]
+                transactions_by_account.setdefault(aid, []).append(txn)
+        except plaid.ApiException:
+            pass  # investments product not available for this item
 
         return {"accounts": accounts, "transactions_by_account": transactions_by_account}
 

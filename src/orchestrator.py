@@ -269,6 +269,7 @@ class Orchestrator:
         self,
         csv_data: Dict[str, List[CSVFileInput]],
         on_progress: Optional[Callable[[str, str, float], None]] = None,
+        on_sub_progress: Optional[Callable[[int, int], None]] = None,
     ) -> List[OrchestratorResult]:
         """
         Run the full pipeline from CSV file inputs.
@@ -281,6 +282,8 @@ class Orchestrator:
             by the Streamlit dropdown the user selects for each uploaded file.
         on_progress : callable, optional
             on_progress(step_name, detail, fraction) called after each stage.
+        on_sub_progress : callable(done, total) | None
+            Called per transaction during cleaning and categorization.
 
         Returns
         -------
@@ -291,12 +294,13 @@ class Orchestrator:
             _emit(_on_progress, "load", f"Loaded {len(users)} user(s) from CSV")
             return users
 
-        return self._run(_load, on_progress)
+        return self._run(_load, on_progress, on_sub_progress)
 
     def run_from_plaid_data(
         self,
         plaid_data: Dict[str, dict],
         on_progress: Optional[Callable[[str, str, float], None]] = None,
+        on_sub_progress: Optional[Callable[[int, int], None]] = None,
     ) -> List[OrchestratorResult]:
         """
         Run the full pipeline from pre-fetched Plaid data.
@@ -308,6 +312,7 @@ class Orchestrator:
             PlaidAPI.get_item_data() — keyed by user label.
             Format: { user_id: {"accounts": [...], "transactions_by_account": {...}} }
         on_progress : callable, optional
+        on_sub_progress : callable(done, total) | None
 
         Returns
         -------
@@ -318,7 +323,7 @@ class Orchestrator:
             _emit(_on_progress, "load", f"Loaded {len(users)} user(s) from Plaid")
             return users
 
-        return self._run(_load, on_progress)
+        return self._run(_load, on_progress, on_sub_progress)
 
     def run_from_plaid_sandbox(
         self,
@@ -326,6 +331,7 @@ class Orchestrator:
         end_date:   Optional[date] = None,
         selected_users: Optional[List[str]] = None,
         on_progress: Optional[Callable[[str, str, float], None]] = None,
+        on_sub_progress: Optional[Callable[[int, int], None]] = None,
     ) -> List[OrchestratorResult]:
         """
         Convenience method: fetch sandbox transactions from Plaid then run
@@ -338,6 +344,7 @@ class Orchestrator:
         selected_users : list[str], optional
             Labels of sandbox users to fetch.  Defaults to all configured users.
         on_progress : callable, optional
+        on_sub_progress : callable(done, total) | None
         """
         if end_date is None:
             end_date = date.today()
@@ -355,7 +362,7 @@ class Orchestrator:
             _emit(_on_progress, "load", f"Fetched {len(users)} user(s) from Plaid sandbox")
             return users
 
-        return self._run(_load, on_progress)
+        return self._run(_load, on_progress, on_sub_progress)
 
     # ------------------------------------------------------------------
     # Core pipeline (shared by all entry points)
@@ -365,6 +372,7 @@ class Orchestrator:
         self,
         load_fn: Callable,
         on_progress: Optional[Callable[[str, str, float], None]],
+        on_sub_progress: Optional[Callable[[int, int], None]] = None,
     ) -> List[OrchestratorResult]:
         """
         Execute the pipeline for a batch of users returned by load_fn.
@@ -405,7 +413,7 @@ class Orchestrator:
         t0 = time.monotonic()
         try:
             cleaner = self._get_cleaner()
-            cleaner.clean_users(users)
+            cleaner.clean_users(users, on_txn_progress=on_sub_progress)
             clean_elapsed = time.monotonic() - t0
             clean_step = StepResult(
                 name="clean", label=_STEP_LABELS["clean"],
@@ -429,7 +437,13 @@ class Orchestrator:
         t0 = time.monotonic()
         try:
             categorizer = self._get_categorizer()
-            categorizer.categorize_users(users, batch_size=self._categorizer_batch_size)
+
+            def on_cat_status(msg: str) -> None:
+                _emit(on_progress, "categorize", msg, _STEP_FRACTIONS["clean"])
+
+            categorizer.categorize_users(users, batch_size=self._categorizer_batch_size,
+                                         on_txn_progress=on_sub_progress,
+                                         on_status=on_cat_status)
             cat_elapsed = time.monotonic() - t0
             cat_step = StepResult(
                 name="categorize", label=_STEP_LABELS["categorize"],

@@ -10,11 +10,13 @@ Static assets (fonts, images) are served from static/ at the project root.
 
 from __future__ import annotations
 
+import html as html_lib
 import io
 import json
 import os
 import sys
 import threading
+import uuid
 from datetime import date, timedelta
 from typing import Dict, List, Literal, Optional
 
@@ -38,25 +40,19 @@ from custom_dataclasses import CSVFileInput
 from ingest.stage_1.plaid_api import PlaidAPI
 from orchestrator import Orchestrator, OrchestratorResult
 from process import PRODUCTS
-
-
-# ---------------------------------------------------------------------------
-# Colors — only needed for Plotly charts (theme handles everything else)
-# ---------------------------------------------------------------------------
-WS_BG         = "#fcfcfc"
-WS_TEXT       = "#32302f"
-WS_TEXT_LIGHT = "#686664"
-WS_BORDER     = "#e4e2e1"
-WS_SUCCESS    = "#486635"
-WS_ERROR      = "#a43d12"
-WS_GREEN      = "#00C8A0"
-WS_AMBER      = "#F59E0B"
+from ui.styles import (
+    CATEGORY_COLORS, CF_COLORS, PLOT_FONT, SIDEBAR_CSS,
+    WS_BG, WS_TEXT, WS_TEXT_LIGHT, WS_BORDER,
+    WS_GREEN, WS_AMBER, WS_SUCCESS, WS_ERROR,
+    get_color, colors_for,
+)
 
 
 # ---------------------------------------------------------------------------
 # Account type options
 # ---------------------------------------------------------------------------
 _ACCOUNT_TYPES: Dict[str, Optional[tuple]] = {
+    "Auto-detect":        None,
     "Chequing":           ("depository", "checking"),
     "Savings":            ("depository", "savings"),
     "Credit Card":        ("credit",     "credit card"),
@@ -65,7 +61,6 @@ _ACCOUNT_TYPES: Dict[str, Optional[tuple]] = {
     "Investment (TFSA)":  ("investment", "tfsa"),
     "Investment (RRSP)":  ("investment", "rrsp"),
     "Investment (Other)": ("investment", "brokerage"),
-    "Auto-detect":        None,
 }
 
 
@@ -94,6 +89,7 @@ def _init_state() -> None:
         "employee_notes":    "",
         "pending_config":    None,
         "_pipeline_ctx":     None,
+        "csv_client_id":     str(uuid.uuid4()),
     }.items():
         if k not in st.session_state:
             st.session_state[k] = v
@@ -104,14 +100,16 @@ def _init_state() -> None:
 # ---------------------------------------------------------------------------
 
 def _render_sidebar() -> None:
+    st.markdown(SIDEBAR_CSS, unsafe_allow_html=True)
+
     logo_path = os.path.join(_PROJ_ROOT, "static", "imgs",
                                 "ws-wordmark-refresh.3499def3.svg")
     if os.path.exists(logo_path):
         st.logo(logo_path)
 
     with st.sidebar:
-        st.title("Underwriting")
-        st.caption("Internal advisory tool")
+        st.title("Settings & Controls")
+        st.caption("Underwriting Demo — select data source, date range, and LLM provider, then run the analysis.")
         st.divider()
 
         st.text(body="Data Source")
@@ -120,9 +118,7 @@ def _render_sidebar() -> None:
         config: dict = {"source": source}
 
         if source == "CSV Upload":
-            st.text(body="Client ID")
-            config["client_id"] = st.text_input(
-                "cid", value="client_001", label_visibility="collapsed")
+            config["client_id"] = st.session_state.csv_client_id
 
             st.text(body="Transaction files")
             uploaded = st.file_uploader(
@@ -144,21 +140,17 @@ def _render_sidebar() -> None:
             sandbox_users = PlaidAPI.list_sandbox_users()  # [(label, username), ...]
             all_labels = [label for label, _ in sandbox_users]
 
-            st.text(body="Sandbox users")
-            selected_users: List[str] = st.multiselect(
-                "users", options=all_labels, default=[],
-                placeholder="Select one or more users…",
+            st.text(body="Sandbox user")
+            selected_label: Optional[str] = st.selectbox(
+                "users",
+                options=[None] + all_labels,
+                format_func=lambda x: "Select a user…" if x is None else x,
                 label_visibility="collapsed",
+                disabled=not all_labels,
             )
-            config["selected_users"] = selected_users
-
-            st.text(body="Date range")
-            c1, c2 = st.columns(2)
-            with c1:
-                config["start_date"] = st.date_input(
-                    "From", value=date.today() - timedelta(days=365))
-            with c2:
-                config["end_date"] = st.date_input("To", value=date.today())
+            config["selected_users"] = [selected_label] if selected_label else []
+            config["start_date"] = date.today() - timedelta(days=365)
+            config["end_date"]   = date.today()
 
         st.divider()
 
@@ -220,6 +212,39 @@ def _build_csv_data(config: dict) -> Dict[str, List[CSVFileInput]]:
     return {client_id: files}
 
 
+def _check_csv_date_coverage(csv_data: Dict[str, List[CSVFileInput]]) -> Optional[str]:
+    """
+    Scan each CSV DataFrame for a date column and check that the combined
+    date range spans at least 365 days.  Returns an error string if not,
+    or None if coverage is sufficient (or indeterminate).
+    """
+    all_dates: List[date] = []
+    for file_inputs in csv_data.values():
+        for fi in file_inputs:
+            for col in fi.df.columns:
+                try:
+                    parsed = pd.to_datetime(fi.df[col], errors="coerce", dayfirst=False)
+                    if parsed.notna().sum() >= len(fi.df) * 0.7:
+                        all_dates.extend(parsed.dropna().dt.date.tolist())
+                        break  # found the date column for this file
+                except Exception:
+                    continue
+
+    if not all_dates:
+        return None  # can't determine dates; let the pipeline handle it
+
+    days = (max(all_dates) - min(all_dates)).days
+    if days < 365:
+        months = max(1, round(days / 30.44))
+        plural = "s" if months != 1 else ""
+        return (
+            f"The uploaded files only cover {days} days (~{months} month{plural}). "
+            f"At least 12 months of transaction history is required for accurate underwriting. "
+            f"Please upload additional files to extend the date range."
+        )
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Pipeline runner (threaded)
 # ---------------------------------------------------------------------------
@@ -231,13 +256,14 @@ def _start_pipeline(config: dict) -> None:
     rerun — no session state is written from the background thread.
     """
     ctx: dict = {
-        "done":    False,
-        "results": None,
-        "error":   None,
-        "frac":    0.0,
-        "label":   "Initialising…",
-        "detail":  "",
-        "log":     [],
+        "done":             False,
+        "cancelled":        False,
+        "cancel_requested": False,
+        "results":          None,
+        "error":            None,
+        "frac":             0.0,
+        "label":            "Initialising…",
+        "detail":           "",
     }
     st.session_state._pipeline_ctx     = ctx
     st.session_state.running           = True
@@ -250,12 +276,22 @@ def _start_pipeline(config: dict) -> None:
 
     def _run() -> None:
         def on_progress(label: str, detail: str, frac: float) -> None:
+            if ctx["cancel_requested"]:
+                raise InterruptedError("Cancelled by user")
             ctx["frac"]   = frac
             ctx["label"]  = label
             ctx["detail"] = detail
-            ctx["log"].append({"label": label, "detail": detail, "frac": frac})
+
+        def on_sub_progress(done: int, total: int) -> None:
+            ctx["detail"] = f"{done:,} / {total:,} transactions"
 
         try:
+            if csv_data is not None:
+                coverage_error = _check_csv_date_coverage(csv_data)
+                if coverage_error:
+                    ctx["error"] = coverage_error
+                    return
+
             orchestrator = Orchestrator(
                 api_provider           = config.get("api_provider"),
                 n_gpu_layers           = config.get("gpu_layers", 0),
@@ -264,14 +300,18 @@ def _start_pipeline(config: dict) -> None:
             )
             if config["source"] == "CSV Upload" and csv_data is not None:
                 ctx["results"] = orchestrator.run_from_csv(
-                    csv_data, on_progress=on_progress)
+                    csv_data, on_progress=on_progress,
+                    on_sub_progress=on_sub_progress)
             else:
                 ctx["results"] = orchestrator.run_from_plaid_sandbox(
                     start_date=config["start_date"],
                     end_date=config["end_date"],
                     selected_users=config.get("selected_users"),
                     on_progress=on_progress,
+                    on_sub_progress=on_sub_progress,
                 )
+        except InterruptedError:
+            ctx["cancelled"] = True
         except Exception as exc:
             ctx["error"] = str(exc)
         finally:
@@ -281,28 +321,14 @@ def _start_pipeline(config: dict) -> None:
 
 
 def _render_progress() -> None:
-    """Render a live progress bar and step log from the pipeline ctx dict."""
-    ctx   = st.session_state.get("_pipeline_ctx") or {}
-    frac  = float(ctx.get("frac", 0.0))
-    label = ctx.get("label", "Initialising…")
+    """Render a single pipeline progress bar with live stage + transaction text."""
+    ctx    = st.session_state.get("_pipeline_ctx") or {}
+    frac   = float(ctx.get("frac", 0.0))
+    label  = ctx.get("label", "Initialising…")
     detail = ctx.get("detail", "")
-    log   = list(ctx.get("log", []))  # snapshot to avoid mutation mid-render
 
-    pct = int(frac * 100)
-    bar_text = f"**{label}**" + (f" — {detail}" if detail else "") + f"  ·  {pct}%"
-    st.progress(frac, text=bar_text)
-
-    if log:
-        st.divider()
-        for entry in log:
-            c1, c2 = st.columns([7, 1])
-            with c1:
-                line = f"✓ {entry['label']}"
-                if entry.get("detail"):
-                    line += f" — {entry['detail']}"
-                st.caption(line)
-            with c2:
-                st.caption(f"{int(entry['frac'] * 100)}%")
+    text = label + (f" — {detail}" if detail else "")
+    st.progress(frac, text=text)
 
 
 def _error_result(msg: str) -> OrchestratorResult:
@@ -318,6 +344,11 @@ def _error_result(msg: str) -> OrchestratorResult:
 # ---------------------------------------------------------------------------
 # UI helpers
 # ---------------------------------------------------------------------------
+
+def _md(text: str) -> str:
+    """Escape characters that Streamlit's Markdown renderer treats specially."""
+    return text.replace("$", r"\$")
+
 
 def _score_color(score: Optional[int]) -> str:
     if score is None:  return WS_TEXT_LIGHT
@@ -441,9 +472,9 @@ def _tab_overview(result: OrchestratorResult) -> None:
         if decision:
             st.badge(decision.title(), color=_decision_color(decision))
         if summary:
-            st.write(summary)
+            st.write(_md(summary))
         if rej_reason:
-            st.error(f"**Rejection reason:** {rej_reason}")
+            st.error(f"**Rejection reason:** {_md(rej_reason)}")
 
     with c_meta:
         st.metric("LLM provider", provider.title())
@@ -516,20 +547,17 @@ def _tab_spending(result: OrchestratorResult) -> None:
         st.info("No transaction data available.")
         return
 
-    _PLOT_FONT = dict(family="The Future, Helvetica Neue, sans-serif",
-                        color=WS_TEXT)
-
     st.subheader("Monthly Cash Flow")
     cf_df   = pd.DataFrame(cf).T.reset_index().rename(columns={"index": "Month"})
     cf_long = cf_df.melt(id_vars="Month", value_vars=["income", "expenses", "net"],
                             var_name="Type", value_name="CAD")
     fig_cf = px.line(
         cf_long, x="Month", y="CAD", color="Type",
-        color_discrete_map={"income": WS_SUCCESS, "expenses": WS_ERROR, "net": "#6366f1"},
+        color_discrete_map=CF_COLORS,
         markers=True, template="plotly_white",
     )
     fig_cf.update_layout(
-        font=_PLOT_FONT,
+        font=PLOT_FONT,
         legend=dict(orientation="h", y=1.1),
         plot_bgcolor=WS_BG, paper_bgcolor=WS_BG,
         margin=dict(t=10, b=30), height=280,
@@ -543,13 +571,16 @@ def _tab_spending(result: OrchestratorResult) -> None:
         cats = [c for c in sp_df.columns if c != "Month"]
         sp_long = sp_df.melt(id_vars="Month", value_vars=cats,
                                 var_name="Category", value_name="CAD")
+        _sp_domain, _sp_range = colors_for(cats)
         chart_sp = (
             alt.Chart(sp_long)
             .mark_bar()
             .encode(
                 x=alt.X("Month:N", sort=None),
                 y=alt.Y("CAD:Q", stack="zero", title="CAD"),
-                color=alt.Color("Category:N", legend=alt.Legend(orient="bottom")),
+                color=alt.Color("Category:N",
+                    scale=alt.Scale(domain=_sp_domain, range=_sp_range),
+                    legend=alt.Legend(orient="bottom")),
                 tooltip=["Month", "Category", alt.Tooltip("CAD:Q", format="$,.0f")],
             )
             .properties(height=300)
@@ -559,17 +590,19 @@ def _tab_spending(result: OrchestratorResult) -> None:
     if cat:
         st.subheader("Spending Breakdown")
         cat_df = (pd.DataFrame([{"Category": k, "CAD": v} for k, v in cat.items()])
-                    .sort_values("CAD", ascending=False))
+                    .sort_values("CAD", ascending=False)
+                    .reset_index(drop=True))
+        _pie_colors = [get_color(c) for c in cat_df["Category"]]
         c_pie, c_tbl = st.columns([2, 1])
         with c_pie:
             fig_pie = px.pie(
                 cat_df, names="Category", values="CAD", hole=0.44,
                 template="plotly_white",
-                color_discrete_sequence=px.colors.qualitative.Pastel,
+                color_discrete_sequence=_pie_colors,
             )
             fig_pie.update_traces(textinfo="percent+label", textfont_size=10)
             fig_pie.update_layout(
-                font=_PLOT_FONT, showlegend=False,
+                font=PLOT_FONT, showlegend=False,
                 plot_bgcolor=WS_BG, paper_bgcolor=WS_BG,
                 margin=dict(t=5, b=5, l=5, r=5), height=320,
             )
@@ -591,20 +624,26 @@ def _tab_products(result: OrchestratorResult) -> None:
     uw  = result.underwriting or {}
     rec = {p.lower() for p in uw.get("recommended_products", [])}
 
-    st.caption("Highlighted cards were recommended by the underwriting model.")
+    st.caption("Green cards were recommended by the underwriting model.")
 
-    cols = st.columns(3)
+    cols = st.columns(3, gap="small")
     for i, product in enumerate(PRODUCTS.products):
         is_rec = product.name.lower() in rec
+        bg     = "background:#e6f7f4; border:1px solid #00C8A0;" if is_rec else "background:#ffffff; border:1px solid #e4e2e1;"
+        income = (f'<p style="margin:8px 0 0 0;font-size:12px;color:#686664;">'
+                  f'Min income: ${product.min_annual_income:,}/yr</p>'
+                  if product.min_annual_income else "")
+        card = f"""
+        <div style="{bg} border-radius:10px; padding:16px; margin:8px 0; height:300px; box-sizing:border-box; overflow:hidden;">
+            <span style="background:#e4e2e1;color:#686664;padding:5px 10px;border-radius:10px;font-size:12px;">
+                {html_lib.escape(product.type)}
+            </span>
+            <h4 style="margin:10px 0 6px 0;font-size:16px;">{html_lib.escape(product.name)}</h4>
+            <p style="margin:0;font-size:13px;color:#32302f;">{html_lib.escape(product.description)}</p>
+            {income}
+        </div>"""
         with cols[i % 3]:
-            with st.container(border=True):
-                if is_rec:
-                    st.badge("Recommended", color="green")
-                st.badge(product.type, color="gray")
-                st.subheader(product.name)
-                st.write(product.description)
-                if product.min_annual_income:
-                    st.caption(f"Min income: ${product.min_annual_income:,}/yr")
+            st.markdown(card, unsafe_allow_html=True)
 
 
 # ---------------------------------------------------------------------------
@@ -752,25 +791,27 @@ def _tab_employee(result: OrchestratorResult) -> None:
 # ---------------------------------------------------------------------------
 
 def _welcome() -> None:
-    st.title("Underwriting Console")
-    st.caption("Credit scoring & product recommendations — internal use only")
+    st.title("Wealthsimple Underwriting Tool", text_alignment='center')
+    st.markdown(
+        """
+        This internal tool is designed to assist underwriters by providing data-driven insights and recommendations based on clients' financial data. It leverages advanced machine learning models to analyze transaction history, identify risk signals, and suggest suitable financial products.
+        """,
+        text_alignment='center'
+    )
+    splash_path = os.path.join(_PROJ_ROOT, "static", "imgs", "videoframe_4033.png")
+    if os.path.exists(splash_path):
+        st.image(splash_path, width='content',)
+    
+    st.markdown(
+        "To get started, please select a data source and configure the analysis parameters in the sidebar, then click 'Run Analysis'.",
+        text_alignment='center'
+    )
+    st.markdown("Once the analysis is complete, you can explore the results across different tabs.", text_alignment='center')
+    
     st.divider()
-
-    for col, title, body in zip(
-        st.columns(3),
-        ["CSV Upload", "Plaid Sandbox", "LLM Underwriting"],
-        [
-            "Upload one or more transaction CSV files and assign account "
-            "types to run the full NLP and underwriting pipeline.",
-            "Pull live-format data directly from the Plaid sandbox "
-            "environment without uploading any files.",
-            "Claude (Anthropic) or GPT-4o mini (OpenAI) generates a "
-            "credit score, approval decision, and product recommendations.",
-        ],
-    ):
-        with col:
-            with st.container(border=True):
-                st.subheader(title)
-                st.write(body)
-
-    st.caption("Configure a data source in the sidebar, then click **Run Analysis**.")
+    st.markdown(
+        """
+        **Please note:** This demo uses synthetic data and is intended for illustrative purposes only. The underwriting decisions and product recommendations generated by this tool should not be considered final or used in real-world applications without further review by a qualified underwriter.
+        """,
+        text_alignment='center'
+    )

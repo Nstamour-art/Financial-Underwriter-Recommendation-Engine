@@ -61,16 +61,20 @@ def main() -> None:
         if ctx.get("done"):
             # Pipeline finished — harvest results
             st.session_state.running = False
-            if ctx.get("error"):
+            st.session_state._pipeline_ctx = None
+            if ctx.get("cancelled"):
+                pass  # reset to welcome screen
+            elif ctx.get("error"):
                 st.session_state.results = [_error_result(ctx["error"])]
             elif ctx.get("results"):
                 st.session_state.results = ctx["results"]
-            st.session_state._pipeline_ctx = None
             st.rerun()
 
         # Still running — render progress then auto-refresh
         st.subheader("Running analysis…")
         _render_progress()
+        if st.button("Cancel", type="secondary"):
+            ctx["cancel_requested"] = True
         time.sleep(_POLL_INTERVAL)
         st.rerun()
 

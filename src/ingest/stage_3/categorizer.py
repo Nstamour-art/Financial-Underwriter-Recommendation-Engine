@@ -2,14 +2,14 @@
 Stage 3 - Transaction Categorizer
 
 Assigns a two-level category to cleaned transaction descriptions using
-zero-shot NLI classification (facebook/bart-large-mnli by default).
+semantic similarity (sentence-transformers/all-MiniLM-L6-v2).
+
+Sub-labels from TAXONOMY are embedded once at load time.  At inference,
+descriptions are batch-embedded and matched via cosine similarity — pure
+numpy, no per-item inference loops.
 
 Output format matches Transaction.category: List[str]
   e.g. ["Food and Dining", "Restaurants and Takeout"]
-
-The taxonomy covers the categories that matter most for underwriting:
-income sources, fixed obligations, discretionary spending, and risk signals
-(NSF fees, overdraft charges, payday loans, etc.).
 
 Usage:
     categorizer = TransactionCategorizer()
@@ -22,15 +22,13 @@ Usage:
 import os
 import re
 import sys
-from collections import defaultdict
 from decimal import Decimal
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
-from transformers import pipeline as hf_pipeline
+import numpy as np
+from sentence_transformers import SentenceTransformer
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
-
-_HF_TOKEN: Optional[str] = os.getenv("HF_TOKEN")
 
 try:
     from custom_dataclasses.user_data import User, Transaction
@@ -139,7 +137,16 @@ TAXONOMY: Dict[str, List[str]] = {
     ],
 }
 
-_TOP_LABELS: List[str] = list(TAXONOMY.keys())
+# Flat list of every sub-label and a reverse map sub → top-level.
+# Used for single-pass classification: classify directly into sub-labels,
+# then derive the top-level from the reverse map.
+_ALL_SUB_LABELS: List[str] = [sub for subs in TAXONOMY.values() for sub in subs]
+_SUB_TO_TOP: Dict[str, str] = {
+    sub: top
+    for top, subs in TAXONOMY.items()
+    for sub in subs
+}
+_INCOME_SUBS: List[str] = TAXONOMY["Income"]
 
 
 # ---------------------------------------------------------------------------
@@ -210,56 +217,59 @@ def _check_known_category(text: str) -> Optional[Tuple[str, str]]:
 
 class TransactionCategorizer:
     """
-    Two-pass zero-shot categorizer for transaction descriptions.
+    Semantic-similarity categorizer for transaction descriptions.
 
-    Pass 1 — classify into a top-level category from the TAXONOMY keys.
-    Pass 2 — classify into the matching sub-category list.
+    Sub-labels from TAXONOMY are embedded once at load time.  At inference,
+    descriptions are batch-embedded and matched via cosine similarity —
+    pure numpy, no per-item inference loop.
 
-    Both passes share a single loaded pipeline so memory is only allocated once.
+    The model (all-MiniLM-L6-v2, ~80 MB) is already cached by the
+    ColumnIdentifier stage so there is no extra download.
 
     Parameters
     ----------
     model_name : str
-        Any HuggingFace zero-shot-classification model.
-        Default: MoritzLaurer/deberta-v3-xsmall-zeroshot-v1.1-all-33
-        Heavier alternative: facebook/bart-large-mnli
+        Any sentence-transformers model.  Default: all-MiniLM-L6-v2.
     confidence_threshold : float
-        Minimum top-label score (pass 1) to accept a category. Below this the
+        Minimum cosine similarity to accept a label.  Below this the
         transaction falls into ["Other", "Miscellaneous or unclassified transaction"].
     """
 
-    ZS_MODEL  = "MoritzLaurer/deberta-v3-xsmall-zeroshot-v1.1-all-33"
-    THRESHOLD = 0.20
+    MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+    THRESHOLD  = 0.25
 
     def __init__(
         self,
-        model_name: str = ZS_MODEL,
+        model_name: str = MODEL_NAME,
         confidence_threshold: float = THRESHOLD,
     ):
-        self._model_name = model_name
-        self._threshold  = confidence_threshold
-        self._classifier: Any = None   # lazy-loaded
+        self._model_name  = model_name
+        self._threshold   = confidence_threshold
+        self._model: Optional[SentenceTransformer] = None
+        self._label_vecs: Optional[np.ndarray]     = None  # (n_labels, dim), unit vectors
+        self._income_idx: Optional[np.ndarray]     = None  # indices of Income sub-labels
 
     # ------------------------------------------------------------------
-    # Lazy loader
+    # Lazy loader — embeds all sub-labels once
     # ------------------------------------------------------------------
 
     def _load(self) -> None:
-        if self._classifier is None:
-            self._classifier = hf_pipeline(
-                "zero-shot-classification",
-                model=self._model_name,
-                token=_HF_TOKEN,
-            )
+        if self._model is not None:
+            return
+        self._model = SentenceTransformer(self._model_name)
+        self._label_vecs = self._model.encode(
+            _ALL_SUB_LABELS,
+            normalize_embeddings=True,
+            show_progress_bar=False,
+        )
+        self._income_idx = np.array(
+            [i for i, lbl in enumerate(_ALL_SUB_LABELS) if lbl in _INCOME_SUBS],
+            dtype=np.int32,
+        )
 
     # ------------------------------------------------------------------
     # Core classification
     # ------------------------------------------------------------------
-
-    def _zs(self, text: str, labels: List[str]) -> Tuple[str, float]:
-        """Single zero-shot pass → (best_label, score)."""
-        result = self._classifier(text, candidate_labels=labels, multi_label=False)
-        return result["labels"][0], float(result["scores"][0])
 
     def categorize(
         self,
@@ -267,74 +277,78 @@ class TransactionCategorizer:
         amount: Optional[Decimal] = None,
     ) -> Tuple[List[str], Optional[str]]:
         """
-        Return (category, subcategory) for a cleaned transaction description,
-        matching the Transaction dataclass fields directly.
+        Return (category, subcategory) for a cleaned transaction description.
 
-          category    → List[str] containing the single top-level label,
-                        e.g. ["Food and Dining"]
-          subcategory → str sub-label, e.g. "Restaurants, fast food, and takeout"
-                        or None if classification confidence is too low.
-
-        Parameters
-        ----------
-        description : str
-            Cleaned merchant name or memo (output of TransactionCleaner).
-        amount : Decimal, optional
-            Signed transaction amount (positive = credit/income).
-            Used as a lightweight hint: large credits bias pass 1 toward Income.
+          category    → List[str] with the single top-level label
+          subcategory → str sub-label, or None if similarity is below threshold
         """
         if not description or not description.strip():
             return ["Other"], "Miscellaneous or unclassified transaction"
 
-        # Known-category lookup — deterministic, no inference needed
         known = _check_known_category(description)
         if known:
             return [known[0]], known[1]
 
         self._load()
+        assert self._model is not None
+        assert self._label_vecs is not None
+        assert self._income_idx is not None
 
-        # --- Pass 1: top-level ---
-        top_labels = _TOP_LABELS.copy()
-        # Hint: surface "Income" first for large inbound amounts so the model
-        # sees it as the most salient candidate in its NLI hypothesis template.
+        vec  = self._model.encode([description], normalize_embeddings=True)
+        sims = (vec @ self._label_vecs.T)[0].copy()
+
         if amount is not None and amount > Decimal("200"):
-            top_labels = ["Income"] + [l for l in top_labels if l != "Income"]
+            sims[self._income_idx] *= 1.5
 
-        top_label, top_score = self._zs(description, top_labels)
+        best_idx   = int(np.argmax(sims))
+        best_score = float(sims[best_idx])
 
-        if top_score < self._threshold:
+        if best_score < self._threshold:
             return ["Other"], "Miscellaneous or unclassified transaction"
 
-        # --- Pass 2: sub-category ---
-        sub_labels = TAXONOMY[top_label]
-        sub_label = sub_labels[0] if len(sub_labels) == 1 else self._zs(description, sub_labels)[0]
-
-        return [top_label], sub_label
+        best_sub = _ALL_SUB_LABELS[best_idx]
+        return [_SUB_TO_TOP.get(best_sub, "Other")], best_sub
 
     # ------------------------------------------------------------------
     # Batch / User-level API
     # ------------------------------------------------------------------
 
-    def categorize_users(self, users: List[User], batch_size: int = 32) -> List[User]:
+    def categorize_users(
+        self,
+        users: List[User],
+        batch_size: int = 32,
+        on_txn_progress: Optional[Callable[[int, int], None]] = None,
+        on_status: Optional[Callable[[str], None]] = None,
+    ) -> List[User]:
         """
         Populate Transaction.category and Transaction.subcategory for every
         transaction in the user list.
         Reads Transaction.cleaned_description — run TransactionCleaner first.
         Modifies transactions in-place and returns the same list.
 
-        Uses batched zero-shot inference for throughput: all descriptions that
-        fall through the known-category lookup are processed in a single pass 1
-        batch call, then grouped by top-level result for a batched pass 2 call.
+        Uses a single batched zero-shot inference call against all sub-labels.
+        Known-category items are resolved immediately without inference.
+        Top-level category is derived from the winning sub-label via reverse lookup.
 
         Parameters
         ----------
         batch_size : int
             Number of descriptions per inference batch (default 32).
+        on_txn_progress : callable(done, total) | None
+            Called after each transaction is resolved (known-category lookups
+            and ML write-back both fire this).
+        on_status : callable(msg) | None
+            Called with a human-readable status string before the batch inference.
         """
         self._load()
 
-        # --- Collect all transactions that need ML classification ---
-        # Transactions that hit _KNOWN_CATEGORIES are resolved immediately.
+        # --- Collect all transactions, resolving known-category ones immediately ---
+        all_txn_count = sum(
+            len(account.transactions)
+            for user in users
+            for account in (user.accounts or [])
+        )
+        resolved = 0
         pending: List[Tuple[Transaction, str, Optional[Decimal]]] = []  # (txn, desc, amount)
 
         for user in users:
@@ -342,91 +356,64 @@ class TransactionCategorizer:
                 for txn in account.transactions:
                     desc = txn.cleaned_description or txn.memo
                     if not desc or not desc.strip():
-                        txn.category  = ["Other"]
+                        txn.category    = ["Other"]
                         txn.subcategory = "Miscellaneous or unclassified transaction"
+                        resolved += 1
+                        if on_txn_progress:
+                            on_txn_progress(resolved, all_txn_count)
                         continue
                     known = _check_known_category(desc)
                     if known:
                         txn.category    = [known[0]]
                         txn.subcategory = known[1]
+                        resolved += 1
+                        if on_txn_progress:
+                            on_txn_progress(resolved, all_txn_count)
                     else:
                         pending.append((txn, desc, txn.amount))
 
         if not pending:
             return users
 
-        # --- Pass 1: batch zero-shot top-level classification ---
+        assert self._model is not None
+        assert self._label_vecs is not None
+        assert self._income_idx is not None
+
+        # --- Batch embed all pending descriptions ---
+        if on_status:
+            on_status(f"Classifying {len(pending):,} transactions…")
         descs   = [desc for _, desc, _ in pending]
         amounts = [amt  for _, _, amt  in pending]
 
-        # The pipeline requires the same candidate_labels for all items in one
-        # call, so we use the standard label order and apply the income hint
-        # in post-processing via score inspection.
-        pass1_results = self._classifier(
+        desc_vecs  = self._model.encode(
             descs,
-            candidate_labels=_TOP_LABELS,
-            multi_label=False,
+            normalize_embeddings=True,
+            show_progress_bar=False,
             batch_size=batch_size,
         )
+        # sim_matrix[i, j] = cosine similarity of desc i to sub-label j
+        sim_matrix = desc_vecs @ self._label_vecs.T  # (n_pending, n_labels)
 
-        # --- Apply income hint in post-processing and filter by threshold ---
-        # For each txn determine its top_label / score after the optional hint.
-        top_labels_out: List[Optional[str]] = []
-        for i, result in enumerate(pass1_results):
-            scores_map: Dict[str, float] = dict(zip(result["labels"], result["scores"]))
-            amt = amounts[i]
+        # Apply income boost for large inbound amounts (vectorised)
+        for i, amt in enumerate(amounts):
             if amt is not None and amt > Decimal("200"):
-                # Boost Income score to ensure it wins when it's already competitive
-                income_score = scores_map.get("Income", 0.0)
-                max_score    = max(scores_map.values())
-                if income_score >= max_score * 0.75:
-                    top_labels_out.append("Income")
-                    continue
-            # Normal: take highest scoring label
-            best_label = result["labels"][0]
-            best_score = float(result["scores"][0])
-            if best_score < self._threshold:
-                top_labels_out.append(None)  # will become Other
-            else:
-                top_labels_out.append(best_label)
+                sim_matrix[i, self._income_idx] *= 1.5
 
-        # --- Pass 2: batch sub-category classification, grouped by top_label ---
-        # Group indices by top_label to minimise separate pipeline calls.
-        groups: Dict[str, List[int]] = defaultdict(list)
-        for i, top_label in enumerate(top_labels_out):
-            groups[top_label or "Other"].append(i)
-
-        sub_labels_out: List[str] = [""] * len(pending)
-
-        for top_label, indices in groups.items():
-            if top_label == "Other":
-                for i in indices:
-                    sub_labels_out[i] = "Miscellaneous or unclassified transaction"
-                continue
-
-            sub_candidates = TAXONOMY[top_label]
-            if len(sub_candidates) == 1:
-                for i in indices:
-                    sub_labels_out[i] = sub_candidates[0]
-                continue
-
-            batch_descs = [descs[i] for i in indices]
-            pass2_results = self._classifier(
-                batch_descs,
-                candidate_labels=sub_candidates,
-                multi_label=False,
-                batch_size=batch_size,
-            )
-            if isinstance(pass2_results, dict):
-                pass2_results = [pass2_results]
-            for j, result in enumerate(pass2_results):
-                sub_labels_out[indices[j]] = result["labels"][0]
+        best_indices = np.argmax(sim_matrix, axis=1)   # (n_pending,)
+        best_scores  = sim_matrix[np.arange(len(pending)), best_indices]
 
         # --- Write results back ---
         for i, (txn, _, _) in enumerate(pending):
-            top = top_labels_out[i] or "Other"
-            txn.category    = [top]
-            txn.subcategory = sub_labels_out[i]
+            best_score = float(best_scores[i])
+            if best_score < self._threshold:
+                txn.category    = ["Other"]
+                txn.subcategory = "Miscellaneous or unclassified transaction"
+            else:
+                best_sub        = _ALL_SUB_LABELS[int(best_indices[i])]
+                txn.category    = [_SUB_TO_TOP.get(best_sub, "Other")]
+                txn.subcategory = best_sub
+            if on_txn_progress:
+                on_txn_progress(resolved + i + 1, all_txn_count)
 
         return users
 

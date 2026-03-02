@@ -15,7 +15,7 @@ import re
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import spacy
 from huggingface_hub import hf_hub_download
@@ -34,19 +34,20 @@ from custom_dataclasses.user_data import User, Transaction
 
 # Patterns applied left-to-right; order matters (most specific first).
 _NOISE_PATTERNS = [
-    r'\*[A-Z0-9]+',                                       # Amazon style: *AB12CD
-    r'#\s*\w+',                                           # store/ref numbers: #1234
-    r'\bREF:?\s*\w+',                                     # REF: ABC123
-    r'\b(TXN|IDP|POS|CHQ|ACH|PYMT|PMT)\b',               # banking prefixes
+    r'\*[A-Z0-9]+',                                               # Amazon style: *AB12CD
+    r'#\s*\w+',                                                   # store/ref numbers: #1234
+    r'\bREF:?\s*\w+',                                             # REF: ABC123
+    r'\b(TXN|IDP|POS|DEB|CHQ|ACH|PYMT|PMT|DEBIT|CREDIT)\b',     # banking prefixes
     r'\b(PURCHASE|PAYMENT|TRANSFER|DEPOSIT|WITHDRAWAL)\b',
-    r'\b[A-Z0-9]{10,}\b',                                 # long alphanumeric codes
-    r'\b\d{6,}\b',                                        # long pure-numeric codes
-    r'\b(BC|AB|ON|QC|NS|NB|MB|SK|PE|NL|NT|NU|YT|CA)\b',  # Canadian provinces/country
-    r'\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b',                     # Canadian postal codes
-    r'\b\d{2,4}[-/]\d{2}[-/]\d{2,4}\b',                  # embedded dates
-    r'\$\d+\.?\d*',                                       # dollar amounts
-    r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b',                  # phone numbers
-    r'\s{2,}',                                            # collapse whitespace (last)
+    r'\b[A-Z0-9]{10,}\b',                                         # long alphanumeric codes
+    r'\b\d{4,}\b',                                                # numeric ref/trans codes (4+ digits)
+    r'\b(BC|AB|ON|QC|NS|NB|MB|SK|PE|NL|NT|NU|YT|CA)\b',          # Canadian provinces/country
+    r'\b[A-Z]\d[A-Z]\s?\d[A-Z]\d\b',                             # Canadian postal codes
+    r'\b\d{2,4}[-/]\d{2}[-/]\d{2,4}\b',                          # embedded dates (MM/DD/YY etc.)
+    r'\b\d{1,2}:\d{2}(?::\d{2})?\b',                             # timestamps: 14:23, 14:23:01
+    r'\$\d+\.?\d*',                                               # dollar amounts
+    r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b',                          # phone numbers
+    r'\s{2,}',                                                    # collapse whitespace (last)
 ]
 
 _NOISE_RES = [re.compile(p, re.IGNORECASE) for p in _NOISE_PATTERNS]
@@ -81,11 +82,19 @@ def _check_known_normalization(text: str) -> Optional[str]:
     return None
 
 
+
 def _smart_title(text: str) -> str:
     """
     Title-case each word, but preserve all-caps abbreviations (NSF, ATM, etc.)
-    which would be mangled by str.title().
+    which would be mangled by str.title().  Also strips stray BERT
+    WordPiece markers (``##``) that can leak through.
     """
+    # Remove BERT subword markers that leaked through aggregation
+    text = text.replace("##", "")
+    text = re.sub(r'\s+', ' ', text).strip()
+    if not text:
+        return text
+
     def _cap_word(w: str) -> str:
         # Keep short all-caps words as-is (acronyms: NSF, ATM, BMO …)
         if w.isupper() and len(w) <= 5:
@@ -106,10 +115,18 @@ def _spacy_clean(nlp, text: str) -> str:
     Strip noise tokens, then use spaCy NER/POS to surface the most meaningful
     remaining tokens. Returns spaCy's best ORG entity if one is found, otherwise
     returns proper-noun / noun tokens joined as a phrase.
+
+    GPE / LOC entities (cities, provinces, countries) are excluded from the
+    POS-tag fallback so they don't pollute the merchant name.
     """
     stripped = _apply_noise_strip(text)
     if not stripped:
         return text.strip()
+
+    # Title-case before NLP so spaCy/BERT see naturally-cased text
+    # instead of all-caps bank memos (reduces subword fragmentation
+    # and improves NER accuracy for both models).
+    stripped = stripped.title()
 
     doc = nlp(stripped)
 
@@ -118,10 +135,20 @@ def _spacy_clean(nlp, text: str) -> str:
     if orgs:
         return max(orgs, key=len)
 
+    # Build a set of token indices that belong to GPE / LOC entities
+    # so we can exclude city / province / country names from the fallback.
+    geo_token_ids: set[int] = set()
+    for ent in doc.ents:
+        if ent.label_ in ("GPE", "LOC"):
+            geo_token_ids.update(range(ent.start, ent.end))
+
     # Fall back to meaningful POS tags (proper nouns, nouns; skip stopwords/punct)
     kept = [
         t.text for t in doc
-        if not t.is_stop and not t.is_punct and t.pos_ in ("PROPN", "NOUN", "ADJ")
+        if not t.is_stop
+        and not t.is_punct
+        and t.pos_ in ("PROPN", "NOUN", "ADJ")
+        and t.i not in geo_token_ids
     ]
     return " ".join(kept) if kept else stripped
 
@@ -151,8 +178,15 @@ def _bert_extract_org(
         return None, 0.0
 
     best_word, best_score = max(orgs, key=lambda x: x[1])
+
+    # Strip BERT WordPiece subword markers (## prefix) that can survive
+    # aggregation_strategy="simple" in some transformers versions.
+    best_word = best_word.replace("##", "").strip()
+    if not best_word:
+        return None, 0.0
+
     if best_score >= threshold:
-        return best_word.strip(), best_score
+        return best_word, best_score
     return None, best_score
 
 
@@ -390,17 +424,33 @@ class TransactionCleaner:
     # Batch / User-level API
     # ------------------------------------------------------------------
 
-    def clean_users(self, users: List[User]) -> List[User]:
+    def clean_users(
+        self,
+        users: List[User],
+        on_txn_progress: Optional[Callable[[int, int], None]] = None,
+    ) -> List[User]:
         """
         Clean the ``cleaned_description`` field of every Transaction in the
         provided User objects.  Modifies transactions in-place and returns
         the same list.
+
+        Parameters
+        ----------
+        on_txn_progress : callable(done: int, total: int) | None
+            Called after each transaction is cleaned.
         """
         self._ensure_base_loaded()
-        for user in users:
-            for account in (user.accounts or []):
-                for txn in account.transactions:
-                    txn.cleaned_description = self.clean_memo(txn.memo)
+        all_txns = [
+            txn
+            for user in users
+            for account in (user.accounts or [])
+            for txn in account.transactions
+        ]
+        total = len(all_txns)
+        for i, txn in enumerate(all_txns):
+            txn.cleaned_description = self.clean_memo(txn.memo)
+            if on_txn_progress:
+                on_txn_progress(i + 1, total)
         return users
 
 

@@ -14,11 +14,11 @@ baseRadius             = "full"
 showSidebarBorder      = true
 
 [theme.sidebar]
-backgroundColor          = "#fcfcfc"
-secondaryBackgroundColor = "#C0BDB9"
-textColor                = "#32302f"
-primaryColor             = "#00C8A0"
-borderColor              = "#32302f"
+backgroundColor          = "#32302f"
+secondaryBackgroundColor = "#3d3b39"
+textColor                = "#f5f4f2"
+primaryColor             = "#ff8902"
+borderColor              = "#5c5a58"
 
 
 [[theme.fontFaces]]

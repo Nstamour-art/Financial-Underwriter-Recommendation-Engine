@@ -34,6 +34,16 @@ class PlaidDataConverter:
                 def _dec(v) -> Optional[Decimal]:
                     return Decimal(str(v)) if v is not None else None
 
+                _INV_CATEGORY: dict[str, str] = {
+                    "buy":      "Investments",
+                    "sell":     "Investments",
+                    "cash":     "Investments",
+                    "transfer": "Transfers",
+                    "fee":      "Fees & Charges",
+                    "dividend": "Income",
+                    "interest": "Income",
+                }
+
                 transactions = []
                 for txn in data["transactions_by_account"].get(acct["account_id"], []):
                     raw_amount = txn.get("amount", 0) or 0
@@ -41,16 +51,22 @@ class PlaidDataConverter:
                     amount = Decimal(str(raw_amount)) * Decimal("-1")
                     txn_type = "credit" if amount >= 0 else "debit"
 
-                    pfc = txn.get("personal_finance_category") or {}
-                    legacy = txn.get("category") or []
-                    category = ([pfc["primary"]] if pfc.get("primary") else legacy) or []
+                    if txn.get("_source") == "investment":
+                        inv_type = (txn.get("type") or "").lower()
+                        memo = txn.get("name") or f"Investment {inv_type}".strip()
+                        category = [_INV_CATEGORY.get(inv_type, "Investments")]
+                    else:
+                        pfc = txn.get("personal_finance_category") or {}
+                        legacy = txn.get("category") or []
+                        category = ([pfc["primary"]] if pfc.get("primary") else legacy) or []
+                        memo = txn.get("name") or ""
 
                     transactions.append(Transaction(
                         date=_parse_date(txn["date"]),
                         account_id=acct["account_id"],
                         amount=amount,
-                        memo=txn.get("name") or "",
-                        cleaned_description=txn.get("merchant_name") or txn.get("name") or "",
+                        memo=memo,
+                        cleaned_description=txn.get("merchant_name") or memo,
                         category=category,
                         transaction_type=txn_type,
                         source="plaid",

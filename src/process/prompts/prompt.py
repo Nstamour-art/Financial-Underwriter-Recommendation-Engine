@@ -141,12 +141,14 @@ Output schema:
 {{
   "score": <integer 300-900, creditworthiness score>,
   "decision": <"approved" | "conditional" | "rejected">,
+  "confidence": <float 0.0-1.0, your confidence in this assessment given the data quality and completeness>,
   "summary": <2-3 sentence plain-English explanation of the decision>,
   "rejection_reason": <string if rejected, otherwise null>,
   "recommended_products": [<product names from the list below; empty array if rejected>]
 }}
 
 Scoring bands: 750-900 excellent, 650-749 good (approved), 550-649 fair (conditional), 300-549 poor (rejected).
+Confidence guidance: 0.9+ when data is extensive and clear-cut; 0.7-0.9 for typical cases; below 0.7 when data is sparse, inconsistent, or the decision is borderline.
 Signals that lower the score: NSF events, overdraft fees, payday loans, negative monthly net cash flow, high credit utilization (>70 %), irregular income.
 Signals that raise the score: consistent income, positive monthly net, low obligations relative to income, growing balances.
 
