@@ -23,6 +23,8 @@ from transformers import pipeline as hf_pipeline
 from llama_cpp import Llama
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+_HF_TOKEN: Optional[str] = os.getenv("HF_TOKEN")
 from custom_dataclasses.user_data import User, Transaction
 
 
@@ -187,6 +189,7 @@ def download_qwen3_model(models_dir: Path = _MODELS_DIR) -> Path:
         repo_id=_HF_REPO_ID,
         filename=_GGUF_FILENAME,
         local_dir=str(models_dir),
+        token=_HF_TOKEN,
     )
     return dest
 
@@ -239,12 +242,12 @@ def _llm_extract_merchant(llm: Llama, raw: str, spacy_cleaned: str) -> str:
     })
 
     response = llm.create_chat_completion(
-        messages=messages,
+        messages=messages,  # type: ignore[arg-type]
         max_tokens=24,
         temperature=0.0,
         stop=["\n", "<|im_end|>", "<|endoftext|>"],
     )
-    raw_output = response["choices"][0]["message"]["content"]
+    raw_output = response["choices"][0]["message"]["content"] or ""  # type: ignore[index]
     return _strip_think_tags(raw_output).strip()
 
 
@@ -307,18 +310,25 @@ class TransactionCleaner:
         try:
             self._nlp = spacy.load(self.SPACY_MODEL)
         except OSError:
-            from spacy.cli import download as spacy_download
+            from spacy.cli.download import download as spacy_download
             print(f"Downloading spaCy model '{self.SPACY_MODEL}'...")
             spacy_download(self.SPACY_MODEL)
             self._nlp = spacy.load(self.SPACY_MODEL)
 
     def _load_ner(self) -> None:
         if self._ner is None:
-            self._ner = hf_pipeline(
-                "ner",
+            # The pooler weights (bert.pooler.*) are unused by BertForTokenClassification
+            # and always appear in the load report as UNEXPECTED — suppress that noise.
+            from transformers import logging as hf_logging
+            _prev_verbosity = hf_logging.get_verbosity()
+            hf_logging.set_verbosity_error()
+            self._ner = hf_pipeline(  # type: ignore[call-overload]
+                "ner",  # type: ignore[arg-type]
                 model=self.NER_MODEL,
                 aggregation_strategy="simple",
+                token=_HF_TOKEN,
             )
+            hf_logging.set_verbosity(_prev_verbosity)
 
     def _load_llm(self) -> None:
         if self._llm is not None:
@@ -370,6 +380,7 @@ class TransactionCleaner:
         # Stage 3 - Qwen 3 (only when BERT is not confident)
         if self._llm_model_path:
             self._load_llm()
+            assert self._llm is not None
             return _llm_extract_merchant(self._llm, memo, spacy_result)
 
         # Fallback: return best spaCy result
@@ -387,7 +398,7 @@ class TransactionCleaner:
         """
         self._ensure_base_loaded()
         for user in users:
-            for account in user.accounts:
+            for account in (user.accounts or []):
                 for txn in account.transactions:
                     txn.cleaned_description = self.clean_memo(txn.memo)
         return users

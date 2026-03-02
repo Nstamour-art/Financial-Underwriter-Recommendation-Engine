@@ -110,6 +110,7 @@ class PlaidAPI:
         all_transactions: list[dict] = []
         accounts: list[dict] = []
         offset = 0
+        response = None
 
         while True:
             options = TransactionsGetRequestOptions(
@@ -129,13 +130,14 @@ class PlaidAPI:
                     break
                 except plaid.ApiException as e:
                     body = json.loads(e.body) if isinstance(e.body, str) else e.body
-                    if body.get("error_code") == "PRODUCT_NOT_READY" and attempt < max_retries:
+                    if body and body.get("error_code") == "PRODUCT_NOT_READY" and attempt < max_retries:
                         print(f"  -> PRODUCT_NOT_READY, retrying in {retry_delay}s "
                                 f"(attempt {attempt}/{max_retries})")
                         time.sleep(retry_delay)
                     else:
                         raise
 
+            assert response is not None  # assigned by the retry loop above (raises on all failures)
             # Accounts are the same on every page; capture once from the first response.
             if not accounts:
                 accounts = [a.to_dict() for a in response["accounts"]]

@@ -21,7 +21,7 @@ class Account:
     name: str
     type: str # e.g. "depository", "credit", "loan"
     subtype: Optional[str] # e.g. "checking", "savings", "credit card"
-    current_balance: Decimal
+    current_balance: Optional[Decimal]
     available_balance: Optional[Decimal] # may be None for credit accounts
     transactions: List[Transaction]
     credit_limit: Optional[Decimal] = None # only for credit accounts
@@ -32,4 +32,4 @@ class Account:
 class User:
     user_id: str
     name: Optional[str] = None
-    accounts: List[Account] = None
+    accounts: Optional[List[Account]] = None

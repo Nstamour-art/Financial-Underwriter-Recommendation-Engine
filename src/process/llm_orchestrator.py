@@ -50,7 +50,7 @@ class UnderwritingOrchestrator:
     """
 
     def __init__(self, products: Optional[List[Product]] = None):
-        self._products = products or PRODUCTS
+        self._products = products if products is not None else PRODUCTS.products
 
     def run(self, user: User, api_provider: Optional[str] = None) -> dict:
         """

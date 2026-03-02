@@ -5,5 +5,7 @@ python-dotenv
 spacy
 llama-cpp-python
 pandas
-numpy
+sentence-transformers
+huggingface_hub
 streamlit
+plotly

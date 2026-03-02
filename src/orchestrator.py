@@ -111,7 +111,7 @@ class OrchestratorResult:
     error
         Top-level error message if a critical stage failed, otherwise None.
     """
-    user:                    User
+    user:                    Optional[User]
     underwriting:            Optional[dict]
     steps:                   List[StepResult]
     total_elapsed_seconds:   float
@@ -132,7 +132,7 @@ class OrchestratorResult:
             st.bar_chart(df)
         """
         totals: Dict[str, Dict[str, float]] = defaultdict(lambda: defaultdict(float))
-        for account in (self.user.accounts or []):
+        for account in (self.user.accounts or [] if self.user else []):
             for txn in account.transactions:
                 if txn.amount >= 0:
                     continue
@@ -153,7 +153,7 @@ class OrchestratorResult:
         income:   Dict[str, float] = defaultdict(float)
         expenses: Dict[str, float] = defaultdict(float)
 
-        for account in (self.user.accounts or []):
+        for account in (self.user.accounts or [] if self.user else []):
             for txn in account.transactions:
                 month = txn.date.strftime("%Y-%m")
                 if txn.amount > 0:
@@ -179,7 +179,7 @@ class OrchestratorResult:
         Returns { "Housing": 14400.0, "Food and Dining": 4080.0, ... }
         """
         totals: Dict[str, float] = defaultdict(float)
-        for account in (self.user.accounts or []):
+        for account in (self.user.accounts or [] if self.user else []):
             for txn in account.transactions:
                 if txn.amount < 0:
                     cat = txn.category[0] if txn.category else "Other"
@@ -503,4 +503,4 @@ if __name__ == "__main__":
     orchestrator = Orchestrator()
     results = orchestrator.run_from_plaid_sandbox()
     for res in results:
-        print(f"User: {res.user.user_id}, Decision: {res.underwriting.get('decision') if res.underwriting else 'N/A'}, Error: {res.error}")
+        print(f"User: {res.user.user_id if res.user else 'unknown'}, Decision: {res.underwriting.get('decision') if res.underwriting else 'N/A'}, Error: {res.error}")

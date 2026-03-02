@@ -95,6 +95,10 @@ class ColumnIdentifier:
         Each physical column is assigned to at most one role (greedy, best-first).
         """
         cls._load()
+        assert cls._model is not None
+        assert cls._anchor_vecs is not None
+        assert cls._anchor_keys is not None
+        assert cls._role_slices is not None
 
         col_vecs = cls._model.encode(
             columns,

@@ -9,6 +9,7 @@ import json
 import re
 
 import anthropic
+from anthropic.types import TextBlock
 
 
 # Model used for underwriting inference.
@@ -50,4 +51,5 @@ def call_anthropic(system_prompt: str, user_message: str) -> dict:
         messages=[{"role": "user", "content": user_message}],
     )
 
-    return _parse_json(response.content[0].text)
+    text_block = next(b for b in response.content if isinstance(b, TextBlock))
+    return _parse_json(text_block.text)

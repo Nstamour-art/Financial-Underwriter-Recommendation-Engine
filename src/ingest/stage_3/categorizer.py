@@ -24,16 +24,18 @@ import re
 import sys
 from collections import defaultdict
 from decimal import Decimal
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from transformers import pipeline as hf_pipeline
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
+_HF_TOKEN: Optional[str] = os.getenv("HF_TOKEN")
+
 try:
-    from custom_dataclasses.user_data import User
+    from custom_dataclasses.user_data import User, Transaction
 except ImportError:
-    from ...custom_dataclasses.user_data import User
+    from ...custom_dataclasses.user_data import User, Transaction
 
 
 # ---------------------------------------------------------------------------
@@ -236,7 +238,7 @@ class TransactionCategorizer:
     ):
         self._model_name = model_name
         self._threshold  = confidence_threshold
-        self._classifier = None   # lazy-loaded
+        self._classifier: Any = None   # lazy-loaded
 
     # ------------------------------------------------------------------
     # Lazy loader
@@ -247,6 +249,7 @@ class TransactionCategorizer:
             self._classifier = hf_pipeline(
                 "zero-shot-classification",
                 model=self._model_name,
+                token=_HF_TOKEN,
             )
 
     # ------------------------------------------------------------------
@@ -332,10 +335,10 @@ class TransactionCategorizer:
 
         # --- Collect all transactions that need ML classification ---
         # Transactions that hit _KNOWN_CATEGORIES are resolved immediately.
-        pending: List[Tuple[object, str, Optional[Decimal]]] = []  # (txn, desc, amount)
+        pending: List[Tuple[Transaction, str, Optional[Decimal]]] = []  # (txn, desc, amount)
 
         for user in users:
-            for account in user.accounts:
+            for account in (user.accounts or []):
                 for txn in account.transactions:
                     desc = txn.cleaned_description or txn.memo
                     if not desc or not desc.strip():

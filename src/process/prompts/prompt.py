@@ -103,10 +103,10 @@ def _compute_summary(user: User) -> dict:
         entry: dict = {
             "type":    acc.type,
             "subtype": acc.subtype,
-            "balance": float(round(acc.current_balance, 2)),
+            "balance": float(round(acc.current_balance or Decimal("0"), 2)),
         }
         if acc.credit_limit and acc.credit_limit > 0:
-            used = acc.credit_limit - (acc.available_balance or acc.current_balance)
+            used = acc.credit_limit - (acc.available_balance or acc.current_balance or Decimal("0"))
             entry["credit_limit"]      = float(acc.credit_limit)
             entry["utilization_pct"]   = round(float(used / acc.credit_limit * 100), 1)
         accounts.append(entry)
