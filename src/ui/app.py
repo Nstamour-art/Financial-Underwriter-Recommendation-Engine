@@ -832,7 +832,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
 
     with st.expander("Pipeline log"):
         for step in result.steps:
-            icon = "✔️" if step.status == "completed" else "✖️" if step.status == "failed" else "⏳"
+            icon = "✅" if step.status == "completed" else "❌" if step.status == "failed" else "⏳"
             det  = f" - {step.detail}" if step.detail else ""
             st.write(f"{icon} **{step.label}**{det} `{step.elapsed_seconds:.2f}s`")
 
@@ -964,7 +964,7 @@ def _tab_products(result: OrchestratorResult) -> None:
     if recommended:
         _render_product_grid(recommended, highlighted=True)
     else:
-        st.info("No products recommended by LLM.", icon="❕")
+        st.info("No products recommended by LLM.", icon="😱")
 
     # --- Remaining products ---
     if others:
@@ -1096,7 +1096,7 @@ def _tab_review(result: OrchestratorResult) -> None:
         cols = st.columns(4)
         for i, (key, met) in enumerate(signals.items()):
             label = _SIGNAL_LABELS.get(key, key)
-            icon  = "✓" if met else "✗"
+            icon  = "✅" if met else "❌"
             with cols[i % 4]:
                 if met:
                     st.badge(f"{icon} {label}", color="green")
@@ -1155,7 +1155,7 @@ def _tab_review(result: OrchestratorResult) -> None:
             st.success(
                 f"Override submitted — decision recorded as **{choice}**. "
                 "In production this would notify the compliance team and update the client record.",
-                icon="✓",
+                icon="✅",
             )
     else:
         st.session_state.override_decision  = None

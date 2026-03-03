@@ -50,6 +50,7 @@ _NOISE_PATTERNS = [
     r'\b\d{1,2}:\d{2}(?::\d{2})?\b',                             # timestamps: 14:23, 14:23:01
     r'\$\d+\.?\d*',                                               # dollar amounts
     r'\b\d{3}[-.\s]\d{3}[-.\s]\d{4}\b',                          # phone numbers
+    r'\.(com|ca|net|org|io|co)\b',                               # URL domain extensions (e.g. NETFLIX.COM)
     r'\s{2,}',                                                    # collapse whitespace (last)
 ]
 

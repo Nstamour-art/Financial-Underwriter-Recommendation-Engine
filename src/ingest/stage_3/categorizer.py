@@ -173,15 +173,15 @@ _KNOWN_CATEGORIES: List[Tuple[re.Pattern, str, str]] = [
     (re.compile(r'\b(cerb|ei\s+benefit|cpp|oas)\b', re.I), "Income", "Government benefits such as EI, CPP, OAS, or CERB"),
 
     # --- Financial obligations / risk signals ---
-    (re.compile(r'\bnsf\b',                    re.I), "Financial Obligations", "NSF or overdraft fee"),
-    (re.compile(r'\boverdraft\b',              re.I), "Financial Obligations", "NSF or overdraft fee"),
+    (re.compile(r'\bnsf\b',                    re.I), "Financial Obligations", "NSF fee or overdraft fee"),
+    (re.compile(r'\boverdraft\b',              re.I), "Financial Obligations", "NSF fee or overdraft fee"),
     (re.compile(r'\b(rrsp|tfsa|rrif)\b',       re.I), "Financial Obligations", "RRSP or TFSA contribution or investment"),
     (re.compile(r'\betf\b',                    re.I), "Financial Obligations", "RRSP or TFSA contribution or investment"),
     (re.compile(r'\b(buy|sell)\b.{0,20}\b(shs|shares|units)\b', re.I), "Financial Obligations", "RRSP or TFSA contribution or investment"),
     (re.compile(r'\bpayday\s+loan\b',          re.I), "Financial Obligations", "Payday loan or high-interest lending"),
-    (re.compile(r'\bmortgage\b',               re.I), "Financial Obligations", "Credit card payment"),  # overridden below if "TD" etc.
 
     # --- Housing / utilities ---
+    (re.compile(r'\bmortgage\b',               re.I), "Housing", "Mortgage payment"),
     (re.compile(r'\bhydro\s*one\b',            re.I), "Housing", "Utilities such as hydro, electricity, natural gas, or water"),
     (re.compile(r'\bbc\s*hydro\b',             re.I), "Housing", "Utilities such as hydro, electricity, natural gas, or water"),
     (re.compile(r'\benbridge\b',               re.I), "Housing", "Utilities such as hydro, electricity, natural gas, or water"),
@@ -211,6 +211,53 @@ def _check_known_category(text: str) -> Optional[Tuple[str, str]]:
     for pattern, top, sub in _KNOWN_CATEGORIES:
         if pattern.search(text):
             return top, sub
+    return None
+
+
+# Patterns that strongly signal a payment to a credit card rather than a refund.
+# Matched against the cleaned description on credit-account positive transactions.
+_PAYMENT_DESCRIPTION_RE = re.compile(
+    r'\b('
+    r'payment|pmt|pay'
+    r'|thank[\s\-]?you'          # many issuers post "Thank You" for received payments
+    r'|auto[\s\-]?pay'
+    r'|autopayment'
+    r'|online[\s\-]?pay'
+    r'|web[\s\-]?pay'
+    r'|pre[\s\-]?auth(?:orized)?[\s\-]?pay'
+    r'|bill[\s\-]?pay'
+    r'|minimum[\s\-]?pay'
+    r'|statement[\s\-]?pay'
+    r')\b',
+    re.I,
+)
+
+_CREDIT_CARD_PAYMENT_THRESHOLD = Decimal("20")  # fallback when no keyword present
+
+
+def _check_account_context(
+    account_type: Optional[str],
+    amount: Optional[Decimal],
+    description: str = "",
+) -> Optional[Tuple[str, str]]:
+    """
+    Return (top_level, sub_label) based on account type, description, and amount sign.
+    Takes priority over known-category lookup and ML classification.
+
+    Credit card accounts — positive amount means money credited to the card:
+      - Payment keyword present → "Credit card payment" (strong signal, any size)
+      - No keyword, amount ≥ threshold → "Credit card payment" (likely a payment)
+      - No keyword, amount < threshold → "Other transfer or payment" (likely a refund)
+    """
+    if not account_type:
+        return None
+    if "credit" in account_type.lower():
+        if amount is not None and amount > Decimal("0"):
+            if _PAYMENT_DESCRIPTION_RE.search(description or ""):
+                return "Financial Obligations", "Credit card payment"
+            if amount >= _CREDIT_CARD_PAYMENT_THRESHOLD:
+                return "Financial Obligations", "Credit card payment"
+            return "Transfers and Payments", "Other transfer or payment"
     return None
 
 
@@ -281,15 +328,24 @@ class TransactionCategorizer:
         self,
         description: str,
         amount: Optional[Decimal] = None,
+        account_type: Optional[str] = None,
     ) -> Tuple[List[str], Optional[str]]:
         """
         Return (category, subcategory) for a cleaned transaction description.
 
-          category    → List[str] with the single top-level label
-          subcategory → str sub-label, or None if similarity is below threshold
+          category     → List[str] with the single top-level label
+          subcategory  → str sub-label, or None if similarity is below threshold
+          account_type → Account.type value (e.g. "credit", "depository"); when
+                         provided, account context is checked first so that e.g.
+                         a positive amount on a credit card is correctly classified
+                         as a payment or refund rather than income.
         """
         if not description or not description.strip():
             return ["Other"], "Miscellaneous or unclassified transaction"
+
+        ctx = _check_account_context(account_type, amount, description)
+        if ctx:
+            return [ctx[0]], ctx[1]
 
         known = _check_known_category(description)
         if known:
@@ -366,6 +422,14 @@ class TransactionCategorizer:
                     if not desc or not desc.strip():
                         txn.category    = ["Other"]
                         txn.subcategory = "Miscellaneous or unclassified transaction"
+                        resolved += 1
+                        if on_txn_progress:
+                            on_txn_progress(resolved, all_txn_count)
+                        continue
+                    ctx = _check_account_context(account.type, txn.amount, desc)
+                    if ctx:
+                        txn.category    = [ctx[0]]
+                        txn.subcategory = ctx[1]
                         resolved += 1
                         if on_txn_progress:
                             on_txn_progress(resolved, all_txn_count)
