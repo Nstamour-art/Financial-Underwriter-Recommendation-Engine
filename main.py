@@ -102,7 +102,7 @@ def main() -> None:
                         width: 100%;
                         height: 500px;
                         object-fit: cover;
-                        object-position: center center;
+                        object-position: center bottom;
                         display: block;
                     ">
                         <source src="/app/static/imgs/mobile.webm" type="video/webm">

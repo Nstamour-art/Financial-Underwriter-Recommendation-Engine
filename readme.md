@@ -271,3 +271,11 @@ src/
     styles.py                            ← centralised colours and CSS
 main.py                                  ← Streamlit entry point
 ```
+
+## Screenshots
+
+![Score Page showing the score for a middle income Plaid Sandbox user.](resources\screenshots\ScoreScreen.png "Score Page")
+![Spending page showing the trends for this user.](resources\screenshots\SpendingTrends.png "Spending Page")
+![Products Recommendation Page.](resources\screenshots\Products.png "Products Page")
+![Transactions Table with filtering.](resources\screenshots\Transactions.png "Transaction Page")
+![Employee backend with Overide feature.](resources\screenshots\EmployeeOversight.png "Decision Review Page")
