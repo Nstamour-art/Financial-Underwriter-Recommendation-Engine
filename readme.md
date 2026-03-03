@@ -6,7 +6,7 @@ Built as an interactive Streamlit application with live progress tracking, Altai
 
 ## Why This Project
 
-Credit underwriting is a legacy system. If a person were designing it today, with the technology available, they wouldn't reduce a person's financial identity to a single bureau score. They would look at what you actually do with your money.
+Credit underwriting is a legacy system. If a person were designing it today, with the technology available, they wouldn't reduce your financial identity to a single bureau score. They would look at what you actually do with your money and leverage new technology to make that faster and more personal.
 
 I built this because I've lived there. In 2022, a severe medical condition left me unable to work for two years. I fell behind on payments, not because I was irresponsible, but because life happened. My credit score collapsed. Rebuilding it took years of effort and consistency, even though my underlying financial behaviour was sound. That experience made the gap in the system personal for me. I realized that creditworthy people are routinely excluded by a metric that can't distinguish hardship from risk.
 
