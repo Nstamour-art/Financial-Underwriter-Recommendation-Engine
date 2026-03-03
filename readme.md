@@ -4,16 +4,6 @@ A full-stack AI pipeline that ingests raw bank transaction data, cleans and clas
 
 Built as an interactive Streamlit application with live progress tracking, Altair/Plotly visualisations, and a employee review layer for rejected applicants.
 
----
-
-## The Problem
-
-Traditional financial product underwriting depends on credit bureau scores, which systematically exclude people who are creditworthy but credit-invisible: recent immigrants, young adults, the self-employed, and anyone who manages finances with cash or debit. At the same time, reviewing raw bank statements manually is labour-intensive and inconsistent.
-
-This tool addresses both problems: it evaluates a client's actual financial behaviour from their transaction history, automates the heavy lifting of data cleaning and classification, and surfaces a structured recommendation for a human advisor.
-
----
-
 ## Why This Project
 
 Credit underwriting is a legacy system. If a person were designing it today, with the technology available, they wouldn't reduce a person's financial identity to a single bureau score. They would look at what you actually do with your money.
@@ -93,8 +83,6 @@ The system is designed to act not just as a demo, but as a prototype for a solut
 │  Overview · Spending · Products · Transactions · Review    │
 └────────────────────────────────────────────────────────────┘
 ```
-
----
 
 ## Stage Breakdown
 

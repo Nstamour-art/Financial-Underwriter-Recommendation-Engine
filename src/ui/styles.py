@@ -98,5 +98,9 @@ SIDEBAR_CSS = """
 [data-testid="stLogo"] img {
     filter: brightness(0) invert(1);
 }
+
+[data-testid="stBadge"] {
+    padding: 3px 10px;
+}
 </style>
 """
