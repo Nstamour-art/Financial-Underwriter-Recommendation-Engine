@@ -1,5 +1,5 @@
 """
-Wealthsimple Underwriting Tool — Streamlit front end.
+Wealthsimple Underwriting Tool - Streamlit front end.
 
 Run with:
     streamlit run main.py
@@ -67,7 +67,7 @@ _ACCOUNT_TYPES: Dict[str, Optional[tuple]] = {
 
 
 # ---------------------------------------------------------------------------
-# Page config — must be first Streamlit call
+# Page config - must be first Streamlit call
 # ---------------------------------------------------------------------------
 st.set_page_config(
     page_title="WS Underwriting",
@@ -87,9 +87,10 @@ def _init_state() -> None:
         "results":           None,
         "running":           False,
         "selected_idx":      0,
-        "override_decision": None,
-        "override_reason":   "",
-        "employee_notes":    "",
+        "override_decision":  None,
+        "override_reason":    "",
+        "override_submitted": False,
+        "employee_notes":     "",
         "pending_config":    None,
         "_pipeline_ctx":     None,
         "csv_client_id":     str(uuid.uuid4()),
@@ -116,16 +117,16 @@ def _csv_upload_dialog() -> None:
     Modal dialog for CSV upload configuration.
 
     Lets the user:
-        1.  Enter a client name (cosmetic — UUID stays internal).
+        1.  Enter a client name (cosmetic - UUID stays internal).
         2.  Upload one or more CSV statement files.
         3.  For each file, pick an account type and an *account group*.
             Files sharing the same group are merged (concatenated) before
-            processing — this is how multiple monthly statements for the
+            processing - this is how multiple monthly statements for the
             same account become a single 12-month history.
     """
     st.caption(
         "Upload transaction CSVs and organise them into account groups. "
-        "Files in the **same group** are merged together — use this to "
+        "Files in the **same group** are merged together - use this to "
         "combine monthly statements for one account."
     )
 
@@ -150,7 +151,7 @@ def _csv_upload_dialog() -> None:
         st.caption(
             "Assign each file an **account type**. Files with the same type "
             "are automatically grouped into the same account (merged). "
-            "Use the **group** column to override — e.g. if you have two "
+            "Use the **group** column to override - e.g. if you have two "
             "separate chequing accounts."
         )
 
@@ -260,7 +261,7 @@ def _csv_upload_dialog() -> None:
             st.markdown("##### Merge preview")
             for g, fnames in merged_groups.items():
                 st.info(
-                    f"**{g}** — {len(fnames)} files will be merged: "
+                    f"**{g}** - {len(fnames)} files will be merged: "
                     + ", ".join(f"`{n}`" for n in fnames),
                     icon="🔗",
                 )
@@ -297,8 +298,8 @@ def _render_sidebar() -> None:
         st.logo(logo_path)
 
     with st.sidebar:
-        st.title("Settings & Controls")
-        st.caption("Underwriting Demo — select data source, date range, and LLM provider, then run the analysis.")
+        st.title("Controls")
+        st.caption("Underwriting Demo - select data source, date range, and LLM provider, then run the analysis.")
         st.divider()
 
         st.text(body="Data Source")
@@ -323,8 +324,8 @@ def _render_sidebar() -> None:
                     v["group"] for v in st.session_state.csv_file_config.values()
                 )
                 st.success(
-                    f"**{name}** — {n_files} file(s) in {len(groups)} account group(s)",
-                    icon="📁",
+                    f"**{name}** - {n_files} file(s) in {len(groups)} account group(s)",
+                    icon="📂",
                 )
         else:
             sandbox_users = PlaidAPI.list_sandbox_users()  # [(label, username), ...]
@@ -346,21 +347,13 @@ def _render_sidebar() -> None:
 
         st.text(body="LLM Provider")
         prov = st.radio("prov",
-                        ["Auto (prefer Anthropic)", "Anthropic", "OpenAI"],
+                        ["Auto", "Anthropic", "OpenAI"],
                         label_visibility="collapsed")
         config["api_provider"] = {
-            "Auto (prefer Anthropic)": None,
+            "Auto": None,
             "Anthropic":               "anthropic",
             "OpenAI":                  "openai",
         }[prov]
-
-        with st.expander("Advanced"):
-            config["gpu_layers"]    = st.number_input(
-                "GPU layers (llama_cpp)", 0, 128, 0)
-            config["ner_threshold"] = st.slider(
-                "NER confidence threshold", 0.5, 1.0, 0.85, 0.01)
-            config["batch_size"]    = st.number_input(
-                "Categorizer batch size", 4, 128, 32)
 
         st.divider()
 
@@ -377,9 +370,10 @@ def _render_sidebar() -> None:
 
         if st.session_state.results is not None:
             if st.button("Clear & start over"):
-                st.session_state.results           = None
-                st.session_state.override_decision = None
-                st.session_state.employee_notes    = ""
+                st.session_state.results            = None
+                st.session_state.override_decision  = None
+                st.session_state.override_submitted = False
+                st.session_state.employee_notes     = ""
                 st.session_state.csv_client_name   = ""
                 st.session_state.csv_file_config   = {}
                 st.session_state.csv_uploads       = []
@@ -511,10 +505,11 @@ def _start_pipeline(config: dict) -> None:
         "detail":  "",
     }
     st.session_state._pipeline_ctx     = ctx
-    st.session_state.running           = True
-    st.session_state.results           = None
-    st.session_state.override_decision = None
-    st.session_state.employee_notes    = ""
+    st.session_state.running            = True
+    st.session_state.results            = None
+    st.session_state.override_decision  = None
+    st.session_state.override_submitted = False
+    st.session_state.employee_notes     = ""
 
     # Read uploaded files on the main thread (UploadedFile objects can't cross threads)
     csv_data = _build_csv_data(config) if config["source"] == "CSV Upload" else None
@@ -600,7 +595,7 @@ def _render_progress() -> None:
     label  = ctx.get("label", "Initialising…")
     detail = ctx.get("detail", "")
 
-    text = label + (f" — {detail}" if detail else "")
+    text = label + (f" - {detail}" if detail else "")
     st.progress(frac, text=text)
 
 
@@ -667,9 +662,9 @@ def _risk_signals(result: OrchestratorResult) -> List[tuple]:
         if acct.type == "credit" and acct.credit_limit and acct.current_balance:
             util = float(abs(acct.current_balance)) / float(acct.credit_limit)
             if util > 0.9:
-                signals.append((f"Credit utilisation {util:.0%} — {acct.name}", "high"))
+                signals.append((f"Credit utilisation {util:.0%} - {acct.name}", "high"))
             elif util > 0.7:
-                signals.append((f"Credit utilisation {util:.0%} — {acct.name}", "medium"))
+                signals.append((f"Credit utilisation {util:.0%} - {acct.name}", "medium"))
 
     if not signals:
         signals.append(("No significant risk signals detected", "low"))
@@ -686,7 +681,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
     decision   = uw.get("decision")
     summary    = uw.get("summary", "")
     rej_reason = uw.get("rejection_reason")
-    provider   = uw.get("provider", "—")
+    provider   = uw.get("provider", "-")
 
     if result.error and not uw:
         st.error(f"Pipeline error: {result.error}")
@@ -740,7 +735,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
         st.caption("Underwriting Score")
 
     with c_info:
-        user_label = result.user.name or result.user.user_id if result.user else "—"
+        user_label = result.user.name or result.user.user_id if result.user else "-"
         st.subheader(user_label)
         if decision:
             st.badge(decision.title(), color=_decision_color(decision))
@@ -750,7 +745,8 @@ def _tab_overview(result: OrchestratorResult) -> None:
             st.error(f"**Rejection reason:** {_md(rej_reason)}")
 
     with c_meta:
-        st.metric("LLM provider", provider.title())
+        _PROVIDER_LABELS = {"openai": "OpenAI", "anthropic": "Anthropic"}
+        st.metric("LLM provider", _PROVIDER_LABELS.get(provider.lower(), provider.title()))
         st.metric("Runtime", f"{result.total_elapsed_seconds:.1f}s")
 
     # --- Highlight product card ---
@@ -767,7 +763,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
             _hl_left, _hl_right = st.columns([1, 3])
             with _hl_left:
                 st.markdown(
-                    '<p style="font-size:12px;color:#686664;margin:0 0 4px 0;">' 
+                    '<p style="font-size:12px;color:#686664;margin:4px 0;">' 
                     'TOP RECOMMENDED PRODUCT</p>',
                     unsafe_allow_html=True,
                 )
@@ -777,11 +773,11 @@ def _tab_overview(result: OrchestratorResult) -> None:
             with _hl_right:
                 if _prod_obj:
                     st.markdown(
-                        f'<p style="margin:0">{html_lib.escape(_prod_obj.description)}</p>',
+                        f'<p style="margin:4px 0;">{html_lib.escape(_prod_obj.description)}</p>',
                         unsafe_allow_html=True,
                     )
                 if top_reason:
-                    st.info(top_reason, icon="\u2728")
+                    st.info(top_reason, icon="🪙")
                 if _prod_obj and _prod_obj.min_annual_income:
                     st.caption(
                         f"Minimum annual income: **${_prod_obj.min_annual_income:,}**"
@@ -817,7 +813,7 @@ def _tab_overview(result: OrchestratorResult) -> None:
                     col_name, col_bal = st.columns([3, 1])
                     with col_name:
                         st.write(f"**{acct.name}**")
-                        meta = (f"{acct.type} / {acct.subtype or '—'}"
+                        meta = (f"{acct.type} / {acct.subtype or '-'}"
                                 f" · {len(acct.transactions)} transactions")
                         if acct.credit_limit and float(acct.credit_limit) > 0:
                             util = abs(bal) / float(acct.credit_limit)
@@ -836,8 +832,8 @@ def _tab_overview(result: OrchestratorResult) -> None:
 
     with st.expander("Pipeline log"):
         for step in result.steps:
-            icon = "✓" if step.status == "completed" else "✗"
-            det  = f" — {step.detail}" if step.detail else ""
+            icon = "✔️" if step.status == "completed" else "✖️" if step.status == "failed" else "⏳"
+            det  = f" - {step.detail}" if step.detail else ""
             st.write(f"{icon} **{step.label}**{det} `{step.elapsed_seconds:.2f}s`")
 
 
@@ -865,7 +861,7 @@ def _tab_spending(result: OrchestratorResult) -> None:
     )
     fig_cf.update_layout(
         font=PLOT_FONT,
-        legend=dict(orientation="h", y=1.1),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         plot_bgcolor=WS_BG, paper_bgcolor=WS_BG,
         margin=dict(t=10, b=30), height=280,
     )
@@ -968,7 +964,7 @@ def _tab_products(result: OrchestratorResult) -> None:
     if recommended:
         _render_product_grid(recommended, highlighted=True)
     else:
-        st.info("No products recommended by LLM.", icon="ℹ️")
+        st.info("No products recommended by LLM.", icon="❕")
 
     # --- Remaining products ---
     if others:
@@ -991,8 +987,8 @@ def _tab_transactions(result: OrchestratorResult) -> None:
             "Account":     acct.name,
             "Description": txn.cleaned_description or txn.memo,
             "Raw Memo":    txn.memo,
-            "Category":    txn.category[0] if txn.category else "—",
-            "Subcategory": txn.subcategory or "—",
+            "Category":    txn.category[0] if txn.category else "-",
+            "Subcategory": txn.subcategory or "-",
             "Type":        txn.transaction_type.title(),
             "Amount":      float(txn.amount),
         }
@@ -1059,7 +1055,7 @@ def _tab_review(result: OrchestratorResult) -> None:
 
     if confidence < 0.6 or decision == "conditional":
         st.error(
-            f"Escalation required — Combined confidence: {confidence:.0%}, "
+            f"Escalation required - Combined confidence: {confidence:.0%}, "
             f"Decision: {decision.title()}.  "
             "This application should be reviewed by a senior underwriter before any commitment."
         )
@@ -1115,33 +1111,56 @@ def _tab_review(result: OrchestratorResult) -> None:
         "Record a manual override. The original model decision and your "
         "override are both preserved in the audit trail."
     )
-    current = uw.get("decision", "—")
+    current = uw.get("decision", "-")
     choice  = st.selectbox(
         "Decision",
         [f"Keep model decision ({current})", "approved", "conditional", "rejected"],
         key="review_override_select",
     )
     if not choice.startswith("Keep"):
-        st.session_state.override_decision = choice
-        reason = st.text_area(
-            "Override rationale (required)",
-            value=st.session_state.override_reason,
-            placeholder="Explain why the model decision is being changed…",
-            height=80,
-            key="review_override_reason",
-        )
-        st.session_state.override_reason = reason or ""
-        st.warning(f"Decision overridden to **{choice}**")
+        st.session_state.override_decision  = choice
+        st.session_state.override_submitted = False  # reset if dropdown changes
 
-        # Persist override to audit DB
-        if result.audit_id and reason:
-            try:
-                AuditLog().update_override(result.audit_id, choice, reason)
-            except Exception:
-                pass
+        with st.container(border=True):
+            st.markdown(f"**Override rationale** — decision will be changed to **{choice}**")
+            reason = st.text_area(
+                "Rationale",
+                value=st.session_state.override_reason,
+                placeholder="Explain why the model decision is being changed…",
+                height=100,
+                key="review_override_reason",
+                label_visibility="collapsed",
+            )
+            st.session_state.override_reason = reason or ""
+
+            can_submit = bool(reason and reason.strip())
+            if st.button(
+                "Submit override",
+                type="primary",
+                disabled=not can_submit,
+                key="review_override_submit",
+            ):
+                # Persist to audit DB
+                if result.audit_id:
+                    try:
+                        AuditLog().update_override(result.audit_id, choice, reason or "")
+                    except Exception:
+                        pass
+                st.session_state.override_submitted = True
+
+            if not can_submit:
+                st.caption("Enter a rationale above to enable submission.")
+
+        if st.session_state.override_submitted:
+            st.success(
+                f"Override submitted — decision recorded as **{choice}**. "
+                "In production this would notify the compliance team and update the client record.",
+                icon="✓",
+            )
     else:
-        st.session_state.override_decision = None
-        st.session_state.override_reason   = ""
+        st.session_state.override_decision  = None
+        st.session_state.override_reason    = ""
+        st.session_state.override_submitted = False
 
     st.divider()
 
@@ -1167,10 +1186,10 @@ def _tab_review(result: OrchestratorResult) -> None:
                 {
                     "Timestamp":  r.timestamp[:19].replace("T", " "),
                     "Score":      r.score,
-                    "Decision":   (r.human_override or r.decision or "—").title(),
+                    "Decision":   (r.human_override or r.decision or "-").title(),
                     "Confidence": f"{(r.confidence or 0):.0%}",
-                    "Override":   r.human_override.title() if r.human_override else "—",
-                    "Reason":     r.override_reason or "—",
+                    "Override":   r.human_override.title() if r.human_override else "-",
+                    "Reason":     r.override_reason or "-",
                 }
                 for r in records
             ]

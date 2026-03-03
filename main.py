@@ -93,14 +93,14 @@ def main() -> None:
             st.markdown(
                 """
                 <div style="
-                    width: 2000px; max-width: 100%; height: 360px;
+                    width: 2000px; max-width: 100%; height: 500px;
                     margin: 20px auto 0;
                     border-radius: 20px;
                     overflow: hidden;
                 ">
                     <video autoplay loop muted playsinline disablePictureInPicture style="
                         width: 100%;
-                        height: 360px;
+                        height: 500px;
                         object-fit: cover;
                         object-position: center center;
                         display: block;
