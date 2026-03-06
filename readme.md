@@ -8,7 +8,7 @@ Built as an interactive Streamlit application with live progress tracking, Altai
 
 Credit underwriting is a legacy system. If a person were designing it today, with the technology available, they wouldn't reduce your financial identity to a single bureau score. They would look at what you actually do with your money and leverage new technology to make that faster and more personal.
 
-I built this because I've lived there. In 2022, a severe medical condition left me unable to work for two years. I fell behind on payments, not because I was irresponsible, but because life happened. My credit score collapsed. Rebuilding it took years of effort and consistency, even though my underlying financial behaviour was sound. That experience made the gap in the system personal for me. I realized that creditworthy people are routinely excluded by a metric that can't distinguish hardship from risk.
+I built this because I've lived there. In 2020, a severe medical condition left me unable to work for two years. I fell behind on payments, not because I was irresponsible, but because life happened. My credit score collapsed. Rebuilding it took years of effort and consistency, even though my underlying financial behaviour was sound. That experience made the gap in the system personal for me. I realized that creditworthy people are routinely excluded by a metric that can't distinguish hardship from risk.
 
 This project is my answer to the question: *what would underwriting look like if it were built today?* It replaces the single-number with a full behavioural analysis pipeline — ingesting raw transactions, cleaning and classifying them through a cascade of NLP models, and producing a structured recommendation that a human advisor can act on.
 
